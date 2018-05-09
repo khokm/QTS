@@ -3,6 +3,9 @@ using System.Windows.Forms;
 
 namespace QTS.WinForms
 {
+    /// <summary>
+    /// Окно для ввода параметров синтеза СМО.
+    /// </summary>
     public partial class EnterServicePlaceCountForm : Form
     {
         public EnterServicePlaceCountForm()
@@ -10,8 +13,8 @@ namespace QTS.WinForms
             InitializeComponent();
         }
 
-        public int minumumPlaces { get; private set; }
-        public int maximumPlaces { get; private set; }
+        public int MinumumQueuePlaces { get; private set; }
+        public int MaximumQueuePlaces { get; private set; }
 
         private void ApplyButton_Click(object sender, EventArgs e)
         {
@@ -25,8 +28,8 @@ namespace QTS.WinForms
                 return;
             }
 
-            minumumPlaces = min;
-            maximumPlaces = max;
+            MinumumQueuePlaces = min;
+            MaximumQueuePlaces = max;
             DialogResult = DialogResult.OK;
             Close();
         }

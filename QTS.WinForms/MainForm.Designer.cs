@@ -231,7 +231,12 @@
             // 
             // threadIntencity_Numeric
             // 
-            this.threadIntencity_Numeric.Location = new System.Drawing.Point(164, 66);
+            this.threadIntencity_Numeric.Location = new System.Drawing.Point(164, 20);
+            this.threadIntencity_Numeric.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
             this.threadIntencity_Numeric.Minimum = new decimal(new int[] {
             1,
             0,
@@ -248,7 +253,7 @@
             // 
             // parkPlace_Numeric
             // 
-            this.parkPlace_Numeric.Location = new System.Drawing.Point(164, 21);
+            this.parkPlace_Numeric.Location = new System.Drawing.Point(164, 67);
             this.parkPlace_Numeric.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -270,7 +275,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 73);
+            this.label2.Location = new System.Drawing.Point(5, 22);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(158, 13);
             this.label2.TabIndex = 7;
@@ -279,7 +284,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(3, 23);
+            this.label1.Location = new System.Drawing.Point(5, 67);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(128, 26);
             this.label1.TabIndex = 5;

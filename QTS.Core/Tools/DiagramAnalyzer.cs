@@ -2,123 +2,124 @@
 
 namespace QTS.Core.Tools
 {
+    /// <summary>
+    /// Анализатор диаграммы. Вычисляет значения показателей.
+    /// </summary>
     class DiagramAnalyzer
     {
-        IAnalyzable diagram { get; }
-        public DiagramAnalyzer(IAnalyzable diagram)
+        IDiagramData diagram { get; }
+
+        /*
+         * GetChannelsIntersectionLength использует очень много ресурсов,
+         * поэтому мы закешируем некоторые произодные от нее результаты,
+         * чтобы не пересчитывать их.
+         */
+        float[] channelBusyProbalitiesCache;
+
+        /*
+         * Здесь подобная ситуация, хоть и не столь критично по производительности.
+         */
+        float[] queueBusyProbalityCache;
+        float averageClientServiceTimeCache;
+        float averageClientQueueWaitingTimeCache;
+
+        /// <summary>
+        /// Создает новый анализатор.
+        /// </summary>
+        /// <param name="diagram"></param>
+        public DiagramAnalyzer(IDiagramData diagram)
         {
             this.diagram = diagram;
-        }
 
-        public int totalValues
-        {
-            get
+            channelBusyProbalitiesCache = new float[diagram.ChannelCount];
+            queueBusyProbalityCache = new float[diagram.QueueCapacity];
+
+            if (diagram.SystemWorkTime != 0)
             {
-                return 9 + diagram.channelCount * 2 + diagram.queueCapacity;
+                for (int i = 0; i < diagram.ChannelCount; i++)
+                    channelBusyProbalitiesCache[i] = (float)(diagram.GetChannelsIntersectionLength(i + 1) / diagram.SystemWorkTime);
+
+                for (int i = 0; i < diagram.QueueCapacity; i++)
+                    queueBusyProbalityCache[i] = (float)(diagram.QueueBusyTimes[i] / diagram.SystemWorkTime);
+
+            }
+            averageClientServiceTimeCache = diagram.ServedClientCount == 0 ? 0 : (float)diagram.SummaryServiceTime / diagram.ServedClientCount;
+
+            averageClientQueueWaitingTimeCache = 0;
+
+            if (diagram.QueuedClientCount != 0)
+            {
+                double summaryTime = 0;
+
+                foreach (var time in diagram.QueueBusyTimes)
+                    summaryTime += time;
+
+                averageClientQueueWaitingTimeCache = (float)(summaryTime / diagram.QueuedClientCount);
             }
         }
 
-        public float servedProbality
-        {
-            get
-            {
-                if (diagram.clientsCount == 0)
-                    return 0;
+        /// <summary>
+        /// Количество показателей.
+        /// </summary>
+        public int TotalIndexCount => 9 + diagram.ChannelCount * 2 + diagram.QueueCapacity;
 
-                return (float)diagram.clientsServed / diagram.clientsCount;
-            }
-        }
+        /// <summary>
+        /// Вероятность обслуживания.
+        /// </summary>
+        public float ServedProbality => diagram.SummaryClientCount == 0 ? 0 : (float)diagram.ServedClientCount / diagram.SummaryClientCount;
 
-        public float systemThroughput
-        {
-            get
-            {
-                if (diagram.systemWorkTime == 0)
-                    return 0;
+        /// <summary>
+        /// Вероятность отказа.
+        /// </summary>
+        public float RefuseProbality => diagram.SummaryClientCount == 0 ? 0 : (float)diagram.LostClientCount / diagram.SummaryClientCount;
 
-                return (float)(diagram.clientsServed / diagram.systemWorkTime);
-            }
-        }
+        /// <summary>
+        /// Пропускная способность системы.
+        /// </summary>
+        public float SystemThroughput => diagram.SystemWorkTime == 0 ? 0 : (float)(diagram.ServedClientCount / diagram.SystemWorkTime);
 
-        public float lostProbality
-        {
-            get
-            {
-                if (diagram.clientsCount == 0)
-                    return 0;
+        /// <summary>
+        /// Вероятность P занятости n и только n каналов,
+        /// где P = arr[n - 1]
+        /// </summary>
+        public float[] ChannelBusyProbalies => channelBusyProbalitiesCache;
 
-                return (float)diagram.clientsLost / diagram.clientsCount;
-            }
-        }
-
-        //Вероятность P занятости только n каналов, где P = arr[n - 1]
-
-        //_cbp - кеш объекта, он нужен, чтобы не вызывать
-        //GetChannelintersectionLength, требующую много ресурсов
-        float[] _cbp;
-        //Используется для определения, не изменялась ли диаграмма
-        int _clientsCount = -1;
-        public float[] channelBusyProbality
-        {
-            get
-            {
-                if (_cbp != null && diagram.clientsCount == _clientsCount)
-                    return _cbp;
-
-                _clientsCount = diagram.clientsCount;
-                _cbp = new float[diagram.channelCount];
-
-                if (diagram.systemWorkTime == 0)
-                    return _cbp;
-
-                for (int i = 0; i < _cbp.Length; i++)
-                {
-                    _cbp[i] = (float)
-                        (
-                        diagram.GetChannelIntersectionLength(i + 1) / 
-                        diagram.systemWorkTime
-                        );
-                }
-
-                return _cbp;
-            }
-        }
-
-        public float averageBusyChannelCount
+        /// <summary>
+        /// Среднее количество занятых каналов.
+        /// </summary>
+        public float AverageBusyChannelCount
         {
             get
             {
                 float value = 0;
 
-                for(int i = 0; i < diagram.channelCount; i++)
-                    value += (i + 1) * channelBusyProbality[i];
+                for(int i = 0; i < diagram.ChannelCount; i++)
+                    value += (i + 1) * channelBusyProbalitiesCache[i];
 
                 return value;
             }
         }
 
-        //Вероятность P простоя хотя бы n каналов, где P = arr[n - 1]
-        public float[] channelIdleProbality
+        /// <summary>
+        /// Вероятность P простоя хотя бы n каналов,
+        /// где P = arr[n - 1]
+        /// </summary>
+        public float[] ChannelIdleProbality
         {
             get
             {
-                float[] cip = new float[diagram.channelCount];
+                float[] cip = new float[diagram.ChannelCount];
 
-                if (diagram.systemWorkTime == 0)
+                if (diagram.SystemWorkTime == 0)
                     return cip;
 
-                float totalProb = (float)
-                    (
-                    diagram.GetChannelIntersectionLength(0) /
-                    diagram.systemWorkTime
-                    );
+                float totalProb = (float)(diagram.GetChannelsIntersectionLength(0) /diagram.SystemWorkTime);
 
-                cip[diagram.channelCount - 1] = totalProb;
+                cip[diagram.ChannelCount - 1] = totalProb;
 
-                for (int i = diagram.channelCount - 2; i >= 0 ; i--)
+                for (int i = diagram.ChannelCount - 2; i >= 0 ; i--)
                 {
-                    float channelBusyProb = 
-                        channelBusyProbality[diagram.channelCount - 2 - i];
+                    float channelBusyProb = channelBusyProbalitiesCache[diagram.ChannelCount - 2 - i];
 
                     cip[i] = channelBusyProb + totalProb;
 
@@ -129,84 +130,55 @@ namespace QTS.Core.Tools
             }
         }
 
-        public float averageClientCountInQueue
+        /// <summary>
+        /// Вероятность P того, что в очереди будет только n заявок,
+        /// где P = arr[n - 1]
+        /// </summary>
+        public float[] QueueBusyProbality => queueBusyProbalityCache;
+
+        /// <summary>
+        /// Среднее количество заявок в очереди.
+        /// </summary>
+        public float AverageClientCountInQueue
         {
             get
             {
                 float value = 0;
 
-                var probs = queueBusyProbality;
+                var probs = queueBusyProbalityCache;
 
-                for(int i = 0; i < diagram.queueCapacity; i++)
+                for(int i = 0; i < diagram.QueueCapacity; i++)
                     value += (i + 1) * probs[i];
 
                 return value;
             }
         }
 
-        //Вероятность P того, что в очереди будет только n заявок,
-        //где P = arr[n - 1]
-        public float[] queueBusyProbality
+        /// <summary>
+        /// Среднее время ожидания заявки в очереди.
+        /// </summary>
+        public float AverageClientQueueWaitingTime => averageClientQueueWaitingTimeCache;
+
+        /// <summary>
+        /// Среднее время обслуживания заявки.
+        /// </summary>
+        public float AverageClientServiceTime => averageClientServiceTimeCache;
+
+        /// <summary>
+        /// Среднее время нахождения заявки в системе.
+        /// </summary>
+        public float SummaryAverageClientTime => averageClientQueueWaitingTimeCache + averageClientServiceTimeCache;
+
+        /// <summary>
+        /// Среднее количество заявок, находящихся в системе.
+        /// </summary>
+        public float AverageClientCount
         {
             get
             {
-                float[] probs = new float[diagram.queueCapacity];
+                double step = diagram.SystemWorkTime / 100;
 
-                if (diagram.systemWorkTime == 0)
-                    return probs;
-
-                for (int i = 0; i < diagram.queueCapacity; i++)
-                    probs[i] = (float)
-                        (
-                        diagram.queueBusyTime[i] / 
-                        diagram.systemWorkTime
-                        );
-
-                return probs;
-            }
-        }
-
-        public float averageClientQueueWaitingTime
-        {
-            get
-            {
-                if (diagram.queueClientCount == 0)
-                    return 0;
-
-                return 
-                    (float)
-                    (diagram.queueWaitingTime / diagram.queueClientCount);
-            }
-        }
-
-        public float averageClientServiceTime
-        {
-            get
-            {
-                if (diagram.clientsServed == 0)
-                    return 0;
-
-                return (float)diagram.serviceTime / diagram.clientsServed;
-            }
-        }
-
-        public float averageClientTime
-        {
-            get
-            {
-                return 
-                    averageClientQueueWaitingTime + 
-                    averageClientServiceTime;
-            }
-        }
-
-        public float averageClientCountInSystem
-        {
-            get
-            {
-                double step = diagram.systemWorkTime / 100;
-
-                double currentTime = diagram.systemStartTime - step / 2;
+                double currentTime = diagram.FirstClientArrivalTime - step / 2;
 
                 int clientCount = 0;
 

@@ -3,11 +3,10 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using OxyPlot;
 using QTS.Core;
-using QTS.OxyPlotGraphics;
 
 namespace QTS.WinForms
 {
-    public partial class MainForm : Form, IForm
+    public partial class MainForm : Form
     {
         QtsController controller;
         bool rndValueChanged = false;
@@ -18,6 +17,11 @@ namespace QTS.WinForms
 
             controller = new QtsController(this);
 
+            /*
+             * OxyPlot по умолчанию уже использует
+             * клавиши стрелок для движения по диаграмме,
+             * так что отцепим их
+             */
             var keyBinder = new PlotController();
             keyBinder.UnbindKeyDown(OxyKey.Up);
             keyBinder.UnbindKeyDown(OxyKey.Down);
@@ -25,12 +29,21 @@ namespace QTS.WinForms
             keyBinder.UnbindKeyDown(OxyKey.Right);
 
             plot1.Controller = keyBinder;
+
+            //tests
+            //
+            //var pars = new ParametersContainer(10, 5, new[] { 5, 3, 4 }, 0, true, 10, false, -1, false);
+            //controller.MakeDiagram(pars);
         }
 
-        private Parameters ParseParameters()
+        /// <summary>
+        /// Считывает данные с правой панели.
+        /// </summary>
+        /// <returns></returns>
+        private ParametersContainer ParseDiagramParameters()
         {
             int threadIntencity = (int)threadIntencity_Numeric.Value;
-            int parkCount = (int)parkPlace_Numeric.Value;
+            int queuePlaceCount = (int)parkPlace_Numeric.Value;
 
             double minRndValue = (double)minRnd_Numeric.Value;
 
@@ -58,11 +71,10 @@ namespace QTS.WinForms
                 return null;
             }
 
-            return new Parameters(threadIntencity, parkCount, channels.ToArray(), maxTime, maxClients, minRndValue, preferFirstChannel, clientsLimit, timeLimit);
+            return new ParametersContainer(threadIntencity, queuePlaceCount, channels.ToArray(), minRndValue, timeLimit, maxTime, clientsLimit, maxClients, preferFirstChannel);
         }
 
-        // Some Buttons
-        //
+        #region Обработчики кнопок правой панели
         private void addChannelIntencity_Button_Click(object sender, EventArgs e)
         {
             EnterValueForm valueForm = new EnterValueForm(1);
@@ -70,7 +82,7 @@ namespace QTS.WinForms
 
             if (valueForm.DialogResult == DialogResult.OK)
             {
-                channelIntencites.Items.Add(string.Format("{0}. {1}", channelIntencites.Items.Count + 1, valueForm.value));
+                channelIntencites.Items.Add(string.Format("{0}. {1}", channelIntencites.Items.Count + 1, valueForm.Value));
                 deleteChannelIntencity_Button.Enabled = true;
             }
         }
@@ -105,13 +117,9 @@ namespace QTS.WinForms
             valueForm.ShowDialog();
 
             if (valueForm.DialogResult == DialogResult.OK)
-                channelIntencites.Items[channelIntencites.SelectedIndex] = string.Format("{0}. {1}", index + 1, valueForm.value);
+                channelIntencites.Items[channelIntencites.SelectedIndex] = string.Format("{0}. {1}", index + 1, valueForm.Value);
         }
 
-        private void showPrevLines_CheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            controller.ShowPreviousLines(showPrevLines_CheckBox.Checked);
-        }
 
         private void timeLimit_CheckBox_CheckedChanged(object sender, EventArgs e)
         {
@@ -131,28 +139,9 @@ namespace QTS.WinForms
                 rndValueChanged = true;
             }
         }
+        #endregion
 
-        private void plot1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
-        {
-            switch (e.KeyCode)
-            {
-                case Keys.Up:
-                    toEnd_Button.PerformClick();
-                    break;
-                case Keys.Down:
-                    toStart_Button.PerformClick();
-                    break;
-                case Keys.Left:
-                    stepBack_Button.PerformClick();
-                    break;
-                case Keys.Right:
-                    stepForward_Button.PerformClick();
-                    break;
-            }
-        }
-
-        //Diagram Controllers
-        //
+        #region Обработчики кнопок верхней панели (управление над отображением диаграммы)
         private void toStart_Button_Click(object sender, EventArgs e)
         {
             controller.GoToDiagramStart();
@@ -173,26 +162,31 @@ namespace QTS.WinForms
             controller.GoToDiagramEnd();
         }
 
-        //Buttons
-        //
+        private void showPrevLines_CheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            controller.ShowPreviousLines(showPrevLines_CheckBox.Checked);
+        }
+        #endregion
+
+        #region Обработчики кнопок меню
         private void анализДиаграммыToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            controller.ShowDiagramAnalyze();
+            controller.MakeDiagramAnalyze();
         }
 
         private void построитьГрафикToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var parameters = ParseParameters();
+            var parameters = ParseDiagramParameters();
 
             if (parameters == null)
                 return;
 
-            controller.CreateTimeDiagram(parameters);
+            controller.MakeDiagram(parameters);
         }
 
         private void синтезСМОToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var parameters = ParseParameters();
+            var parameters = ParseDiagramParameters();
 
             if (parameters == null)
                 return;
@@ -202,63 +196,29 @@ namespace QTS.WinForms
             if (form.ShowDialog() != DialogResult.OK)
                 return;
 
-            controller.CreateGraphs(parameters, form.minumumPlaces, form.maximumPlaces);
+            controller.MakeSynthesis(parameters, form.MinumumQueuePlaces, form.MaximumQueuePlaces);
         }
+        #endregion
 
-        //IForm implementation
-        //
-        Action IForm.GetFormUpdateAction()
+        #region Обработчик нажатия клавиш стрелок
+        private void plot1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
-            return plot1.Invalidate;
-        }
-
-        void IForm.SetModel(TimeDiagram diagram)
-        {
-            plot1.Model = ((OxyPlotDiagram)diagram).plotModel;
-        }
-
-        void IForm.RemoveModel()
-        {
-            plot1.Model = null;
-            showPrevLines_CheckBox.Checked = true;
-        }
-
-        bool IForm.YesNoDialog(string title, string message)
-        {
-            return MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
-        }
-
-        TimeDiagram IForm.CreateDiagram(int channelCount, int queueCapacity)
-        {
-            return new OxyPlotDiagram(channelCount, queueCapacity);
-        }
-
-        IGraph IForm.CreateGraph()
-        {
-            return new OxyPlotGraph();
-        }
-
-        string IForm.GetImagePathFolder(string description)
-        {
-            using (var fbd = new FolderBrowserDialog() { Description =  description})
+            switch (e.KeyCode)
             {
-                DialogResult result = fbd.ShowDialog();
-
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
-                    return fbd.SelectedPath;
+                case Keys.Up:
+                    toEnd_Button.PerformClick();
+                    break;
+                case Keys.Down:
+                    toStart_Button.PerformClick();
+                    break;
+                case Keys.Left:
+                    stepBack_Button.PerformClick();
+                    break;
+                case Keys.Right:
+                    stepForward_Button.PerformClick();
+                    break;
             }
-
-            return "";
         }
-
-        void IForm.ShowTextWindow(string title, string text)
-        {
-            new TextWindow(text).Show();
-        }
-
-        void IForm.ShowError(string title, string text)
-        {
-            MessageBox.Show(text, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
+        #endregion
     }
 }

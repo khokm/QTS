@@ -7,8 +7,15 @@ using System.Linq;
 
 namespace QTS.Core
 {
-    public abstract class TimeDiagram : IDiagram, IAnalyzable, IController
+    /// <summary>
+    /// Реализация основных возможностей временной диаграммы (заполнение и анализ)
+    /// Управление отображением частично должно быть реализовано в производном классе.
+    /// </summary>
+    public abstract class TimeDiagram : ITimeDiagram, IDiagramData, IDiagramViewController
     {
+        /// <summary>
+        /// Простая линия
+        /// </summary>
         struct Line
         {
             public double start, end;
@@ -25,7 +32,6 @@ namespace QTS.Core
         bool m_diagramCompleted;
 
         double m_serviceTime;
-        double m_queueWaitingTime;
         int m_clientsServed;
         int m_clientsLost;
         int m_queueClientCount;
@@ -34,35 +40,31 @@ namespace QTS.Core
         int m_channelCount;
         int m_queueCapacity;
 
-        List<Line>[] m_channelLines;
         List<Line>[] m_queueLines;
         double[] m_queueBusyTime;
 
+        List<Line>[] m_channelLines;
+
+        /* Массив "обратных "линий (т.е. пустых промежутков между реальными линиями).
+         * Используется при вычислении одновременной занятости n каналов:
+         * для этого берется одна из возможных комбинаций (сочетание) n каналов, находится пересечение ее составляющих.
+         * После этого вычитаются любые промежутки, где есть пересечение с другими каналами, не входящими в комбинацию - 
+         * то есть, просто находится пересечение с линиями из этого массива.
+         */
         Line[][] m_inverseChannelLines;
 
-        int m_currentVisibleIndex;
+        int currentVisibleIndex;
 
         bool m_showPreviousLines;
 
-        int currentVisibleIndex
-        {
-            get
-            {
-                return m_currentVisibleIndex;
-            }
-        }
+        protected int TopY => 2 + ChannelCount + QueueCapacity;
 
-        protected int topY
-        {
-            get
-            {
-                return 2 + channelCount + queueCapacity;
-            }
-        }
-
-        public event Action OnVisualUpdated;
-
-        public TimeDiagram(int channelCount, int queueCapacity)
+        /// <summary>
+        /// Создает пустую диаграмму.
+        /// </summary>
+        /// <param name="channelCount">Количество каналов</param>
+        /// <param name="queueCapacity">Количество мест обслуживания</param>
+        protected TimeDiagram(int channelCount, int queueCapacity)
         {
             m_channelCount = channelCount;
             m_queueCapacity = queueCapacity;
@@ -76,238 +78,108 @@ namespace QTS.Core
                 m_queueLines[i] = new List<Line>();
 
             m_queueBusyTime = new double[queueCapacity];
-            m_inverseChannelLines = new Line[channelCount][];
-
+            
             m_showPreviousLines = true;
         }
 
+        /// <summary>
+        /// Добавляет точку на текущую линию.
+        /// </summary>
+        /// <param name="y"></param>
+        /// <param name="x"></param>
         protected abstract void AddVisualPoint(double y, double x);
 
-        protected abstract void OnLineStarted(double y, double x);
+        /// <summary>
+        /// Вызывается при создании нового пути заявки
+        /// </summary>
+        /// <param name="y"></param>
+        /// <param name="x"></param>
+        protected abstract void OnPathStarted(double y, double x);
 
-        public void PushStartPoint(double arrivalTime)
+        /// <summary>
+        /// Вызывается по окончании создания пути заявки
+        /// </summary>
+        /// <param name="y"></param>
+        /// <param name="x"></param>
+        protected abstract void OnPathFinished(double y, double x);
+
+        /// <summary>
+        /// Вызывается по окончании создания диаграммы
+        /// </summary>
+        protected abstract void OnDiagramFinished();
+
+        /// <summary>
+        /// Вызывается при изменении отображения диаграммы
+        /// </summary>
+        /// <param name="visibleLineIndex"></param>
+        protected abstract void UpdateView(int visibleLineIndex);
+
+        /// <summary>
+        /// Устанавливает количество отображаемых линий
+        /// </summary>
+        /// <param name="lineIndex">Индекс последней отображаемой линии</param>
+        protected void SetVisibleLinesCount(int lineIndex)
         {
-            if (clientsCount == 0)
-                m_systemStartTime = arrivalTime;
+            currentVisibleIndex = lineIndex;
+            UpdateView(currentVisibleIndex);
 
-            int y = topY;
-
-            OnLineStarted(y, arrivalTime);
-            AddVisualPoint(y, arrivalTime);
+            OnViewUpdated?.Invoke();
         }
 
-        public void PushChannelLine(int channelIndex, double start, double end)
+        /// <summary>
+        /// Заканчивает создание пути
+        /// </summary>
+        /// <param name="y"></param>
+        /// <param name="x"></param>
+        void FinishPath(double y, double x)
         {
-            m_channelLines[channelIndex].Add(new Line(start, end));
-
-            m_serviceTime += end - start;
-
-            int y = topY - 1 - channelIndex;
-            AddVisualPoint(y, start);
-            AddVisualPoint(y, end);
-        }
-
-        public void AddQueueClient()
-        {
-            m_queueClientCount++;
-        }
-
-        public void PushParkLine(int parkIndex, double start, double end)
-        {
-            m_queueLines[parkIndex].Add(new Line(start, end));
-
-            double currentParkTime = end - start;
-            m_queueBusyTime[parkIndex] += currentParkTime;
-
-            if (parkIndex != 0)
-                m_queueBusyTime[parkIndex - 1] -= currentParkTime;
-
-            m_queueWaitingTime += currentParkTime;
-
-            int y = topY - 1 - channelCount - parkIndex;
-            AddVisualPoint(y, start);
-            AddVisualPoint(y, end);
-        }
-
-        public void PushServedPoint(double completeTime)
-        {
-            m_clientsServed++;
-            int y = 1;
-            AddVisualPoint(y, completeTime);
-            Breakline(y, completeTime);
-        }
-
-        public void PushBreakPoint(double breakTime)
-        {
-            m_clientsLost++;
-            int y = 0;
-            AddVisualPoint(y, breakTime);
-            Breakline(y, breakTime);
-        }
-
-        void Breakline(double y, double x)
-        {
-            if (systemStopTime < x)
+            if (LastClientDepartureTime < x)
                 m_systemStopTime = x;
 
             m_clientsCount++;
-            OnLineFinished(y, x);
+            OnPathFinished(y, x);
         }
 
-        protected abstract void OnLineFinished(double y, double x);
-
-        protected abstract void FinishVisualDiagram();
-
-        public void CompleteDiagram()
+        /// <summary>
+        /// Возвращает массив "обратных" линий.
+        /// Вызывается по окончании создания диаграммы.
+        /// </summary>
+        Line[][] CaluclateInverseChannelLines()
         {
-            if (m_diagramCompleted)
-                throw new Exception("Диаграмма уже построена");
+            Line[][] inverseLines = new Line[ChannelCount][];
 
-            m_diagramCompleted = true;
-            CaluclateInverseLines();
-            FinishVisualDiagram();
-        }
-
-        public void CaluclateInverseLines()
-        {
-            for (int i = 0; i < channelCount; i++)
+            for (int i = 0; i < ChannelCount; i++)
             {
                 var lines = m_channelLines[i];
 
                 if (lines.Count == 0)
                 {
-                    m_inverseChannelLines[i] = new Line[] 
-                    {
-                        new Line(systemStartTime, systemStopTime)
-                    };
+                    inverseLines[i] = new []{ new Line(FirstClientArrivalTime, LastClientDepartureTime) };
                     continue;
                 }
 
                 List<Line> result = new List<Line>();
 
-                result.Add(new Line(systemStartTime, lines[0].start));
+                result.Add(new Line(FirstClientArrivalTime, lines[0].start));
 
                 for (int k = 0; k < lines.Count - 1; k++)
                     result.Add(new Line(lines[k].end, lines[k + 1].start));
 
-                result.Add
-                    (
-                    new Line(lines[lines.Count - 1].end, systemStopTime)
-                    );
+                result.Add(new Line(lines[lines.Count - 1].end, LastClientDepartureTime));
 
-                m_inverseChannelLines[i] = result.ToArray();
+                inverseLines[i] = result.ToArray();
             }
+
+            return inverseLines;
         }
 
-        public bool diagramCompleted
-        {
-            get
-            {
-                return m_diagramCompleted;
-            }
-        }
-
-        public int channelCount
-        {
-            get
-            {
-                return m_channelCount;
-            }
-        }
-
-        public int queueCapacity
-        {
-            get
-            {
-                return m_queueCapacity;
-            }
-        }
-
-        public int clientsCount
-        {
-            get
-            {
-                return m_clientsCount;
-            }
-        }
-
-        public int clientsServed
-        {
-            get
-            {
-                return m_clientsServed;
-            }
-        }
-
-        public int clientsLost
-        {
-            get
-            {
-                return m_clientsLost;
-            }
-        }
-
-        public double systemStartTime
-        {
-            get
-            {
-                return m_systemStartTime;
-            }
-        }
-
-        public double systemStopTime
-        {
-            get
-            {
-                return m_systemStopTime;
-            }
-        }
-
-        public double systemWorkTime
-        {
-            get
-            {
-                return systemStopTime - systemStartTime;
-            }
-        }
-
-        public double[] queueBusyTime
-        {
-            get
-            {
-                return m_queueBusyTime;
-            }
-        }
-
-        public double queueWaitingTime
-        {
-            get
-            {
-                return m_queueWaitingTime;
-            }
-        }
-
-        public double serviceTime
-        {
-            get
-            {
-                return m_serviceTime;
-            }
-        }
-
-        public int queueClientCount
-        {
-            get
-            {
-                return m_queueClientCount;
-            }
-        }
-
-        Line[] LineIntersect
-            (
-            IEnumerable<Line> lines1, 
-            IEnumerable<Line> lines2
-            )
+        /// <summary>
+        /// Возвращает пересечение двух множеств линий.
+        /// </summary>
+        /// <param name="lines1"></param>
+        /// <param name="lines2"></param>
+        /// <returns></returns>
+        Line[] LineIntersect(IEnumerable<Line> lines1, IEnumerable<Line> lines2)
         {
             List<Line> result = new List<Line>();
 
@@ -328,12 +200,106 @@ namespace QTS.Core
             return result.ToArray();
         }
 
-        public double GetChannelIntersectionLength(int count)
+        #region ITimeDiagram
+        public void PushStartPoint(double arrivalTime)
+        {
+            if (SummaryClientCount == 0)
+                m_systemStartTime = arrivalTime;
+
+            int y = TopY;
+
+            OnPathStarted(y, arrivalTime);
+            AddVisualPoint(y, arrivalTime);
+        }
+
+        public void PushChannelLine(int channelIndex, double start, double end)
+        {
+            m_channelLines[channelIndex].Add(new Line(start, end));
+
+            m_serviceTime += end - start;
+
+            int y = TopY - 1 - channelIndex;
+            AddVisualPoint(y, start);
+            AddVisualPoint(y, end);
+        }
+
+        public void IncrementQueueClientCount()
+        {
+            m_queueClientCount++;
+        }
+
+        public void PushQueueLine(int queuePlaceIndex, double start, double end)
+        {
+            m_queueLines[queuePlaceIndex].Add(new Line(start, end));
+
+            double currentQueuedTime = end - start;
+            m_queueBusyTime[queuePlaceIndex] += currentQueuedTime;
+
+            if (queuePlaceIndex != 0)
+                m_queueBusyTime[queuePlaceIndex - 1] -= currentQueuedTime;
+
+            int y = TopY - 1 - ChannelCount - queuePlaceIndex;
+            AddVisualPoint(y, start);
+            AddVisualPoint(y, end);
+        }
+
+        public void PushServedPoint(double departureTime)
+        {
+            m_clientsServed++;
+            int y = 1;
+            AddVisualPoint(y, departureTime);
+            FinishPath(y, departureTime);
+        }
+
+        public void PushRefusedPoint(double departureTime)
+        {
+            m_clientsLost++;
+            int y = 0;
+            AddVisualPoint(y, departureTime);
+            FinishPath(y, departureTime);
+        }
+
+        public void FinishDiagram()
+        {
+            if (m_diagramCompleted)
+                throw new Exception("Диаграмма уже построена");
+
+            m_diagramCompleted = true;
+            m_inverseChannelLines = CaluclateInverseChannelLines();
+            OnDiagramFinished();
+        }
+
+        public bool Completed => m_diagramCompleted;
+        #endregion
+
+        #region IDiagramData
+        public int ChannelCount => m_channelCount;
+
+        public int QueueCapacity => m_queueCapacity;
+
+        public int SummaryClientCount => m_clientsCount;
+
+        public int ServedClientCount => m_clientsServed;
+
+        public int LostClientCount => m_clientsLost;
+
+        public double FirstClientArrivalTime => m_systemStartTime;
+
+        public double LastClientDepartureTime => m_systemStopTime;
+
+        public double SystemWorkTime => LastClientDepartureTime - FirstClientArrivalTime;
+
+        public double[] QueueBusyTimes => m_queueBusyTime;
+
+        public double SummaryServiceTime => m_serviceTime;
+
+        public int QueuedClientCount => m_queueClientCount;
+
+        public double GetChannelsIntersectionLength(int count)
         {
             double intersectionLength = 0;
 
-            foreach (var usingChannels in 
-                Permuter.Permute(channelCount, count))
+            foreach (var usingChannels in Permuter.Permute(ChannelCount, count))
             {
                 var intersection = new Line[]
                 {
@@ -341,17 +307,11 @@ namespace QTS.Core
                 };
 
                 for (int i = 0; i < count; i++)
-                    intersection = LineIntersect
-                        (
-                        intersection, m_channelLines[usingChannels[i]]
-                        );
+                    intersection = LineIntersect(intersection, m_channelLines[usingChannels[i]]);
 
-                for (int i = 0; i < channelCount; i++)
+                for (int i = 0; i < ChannelCount; i++)
                     if (!usingChannels.Contains(i))
-                        intersection = LineIntersect
-                            (
-                            intersection, m_inverseChannelLines[i]
-                            );
+                        intersection = LineIntersect(intersection, m_inverseChannelLines[i]);
 
                 foreach (var line in intersection)
                     intersectionLength += line.end - line.start;
@@ -367,14 +327,7 @@ namespace QTS.Core
 
             foreach (var line in m_queueLines)
             {
-                var result = LineIntersect
-                    (
-                    line, 
-                    new Line[] 
-                    {
-                        new Line(point - step / 2, point + step / 2)
-                    }
-                    );
+                var result = LineIntersect(line, new[] { new Line(point - step / 2, point + step / 2) });
 
                 if (result.Length != 0)
                     count++;
@@ -384,8 +337,8 @@ namespace QTS.Core
             {
                 var result = LineIntersect
                     (
-                    line, 
-                    new Line[] 
+                    line,
+                    new Line[]
                     {
                         new Line(point - step / 2, point + step / 2)
                     }
@@ -397,9 +350,10 @@ namespace QTS.Core
 
             return count;
         }
+        #endregion
 
-        //IController
-        public bool showPreviousLines
+        #region IDiagramViewController
+        public bool ShowPreviousLines
         {
             get
             {
@@ -408,37 +362,26 @@ namespace QTS.Core
             set
             {
                 m_showPreviousLines = value;
-                SetDiagramVisibility(m_currentVisibleIndex);
+                SetVisibleLinesCount(currentVisibleIndex);
             }
-        }
-
-        protected abstract void UpdateVisualContent(int visibleLineIndex);
-
-        protected void SetDiagramVisibility(int lineIndex)
-        {
-            m_currentVisibleIndex = lineIndex;
-            UpdateVisualContent(currentVisibleIndex);
-
-            if (OnVisualUpdated != null)
-                OnVisualUpdated();
         }
 
         public void GoToStart()
         {
-            SetDiagramVisibility(0);
+            SetVisibleLinesCount(0);
         }
 
         public void GoToEnd()
         {
-            SetDiagramVisibility(clientsCount - 1);
+            SetVisibleLinesCount(SummaryClientCount - 1);
         }
 
         public void StepForward()
         {
-            if (currentVisibleIndex == clientsCount - 1)
+            if (currentVisibleIndex == SummaryClientCount - 1)
                 return;
 
-            SetDiagramVisibility(currentVisibleIndex + 1);
+            SetVisibleLinesCount(currentVisibleIndex + 1);
         }
 
         public void StepBack()
@@ -446,7 +389,10 @@ namespace QTS.Core
             if (currentVisibleIndex == 0)
                 return;
 
-            SetDiagramVisibility(currentVisibleIndex - 1);
+            SetVisibleLinesCount(currentVisibleIndex - 1);
         }
+
+        public event Action OnViewUpdated;
+        #endregion
     }
 }

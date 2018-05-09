@@ -6,14 +6,33 @@ using QTS.Core;
 
 namespace QTS.OxyPlotGraphics
 {
+    /// <summary>
+    /// Реализация графика с использованием библиотеки OxyPlot.
+    /// </summary>
     public class OxyPlotGraph : IGraph
     {
-        public PlotModel plotModel { get; }
-        public LineSeries currentLine { get; private set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public PlotModel PlotModel { get; }
+        public LineSeries CurrentLine { get; private set; }
+
+        public string Title
+        {
+            get
+            {
+                return PlotModel.Title;
+            }
+
+            set
+            {
+                PlotModel.Title = value;
+            }
+        }
 
         public OxyPlotGraph()
         {
-            plotModel = new PlotModel()
+            PlotModel = new PlotModel()
             {
                 IsLegendVisible = false
             };
@@ -21,32 +40,27 @@ namespace QTS.OxyPlotGraphics
 
         public void AddPoint(double y, double x)
         {
-            currentLine.Points.Add(new DataPoint(x, y));
+            CurrentLine.Points.Add(new DataPoint(x, y));
         }
 
-        public void SetTitle(string name)
+        public void StartLine(string name)
         {
-            plotModel.Title = name;
-        }
-
-        public void AddLine(string name)
-        {
-            currentLine = new LineSeries()
+            CurrentLine = new LineSeries()
             {
                 Title = name
             };
-            currentLine.LineStyle = LineStyle.Solid;
+            CurrentLine.LineStyle = LineStyle.Solid;
         }
 
         public void CompleteLine()
         {
-            plotModel.Series.Add(currentLine);
+            PlotModel.Series.Add(CurrentLine);
         }
 
         public Bitmap ExportToBitmap()
         {
             PngExporter exp = new PngExporter();
-            return exp.ExportToBitmap(plotModel);
+            return exp.ExportToBitmap(PlotModel);
         }
     }
 }

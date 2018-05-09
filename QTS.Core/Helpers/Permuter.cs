@@ -3,8 +3,19 @@ using System.Linq;
 
 namespace QTS.Core.Helpers
 {
-    class Permuter
+    /// <summary>
+    /// Вспомогательный класс для создания сочетаний.
+    /// Используется для создания всевозможных комбинаций n каналов,
+    /// после чего подсчитываются промежутки, в которые они пересекаются.
+    /// </summary>
+    static class Permuter
     {
+        /// <summary>
+        /// Возвращает массив сочетаний из n по k
+        /// </summary>
+        /// <param name="n"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
         public static int[][] Permute(int n, int k)
         {
             var list = new int[n];

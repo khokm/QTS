@@ -1,66 +1,91 @@
 ﻿using QTS.Core.Diagram;
 using QTS.Core.Helpers;
+using System;
 
 namespace QTS.Core.Tools
 {
+    /// <summary>
+    /// Прокладывает пути заявок на диграмме.
+    /// </summary>
     class DiagramCreator
     {
         int[] channelsIntencity { get; }
 
-        int channelCount{ get { return channelsIntencity.Length; } }
-        int parksCount { get { return parkFreeTime.Length; } }
+        int channelCount => channelsIntencity.Length;
+        int queueCount => queueIdleTimes.Length;
 
-        double[] channelFreeTime { get; }
-        double[] parkFreeTime { get; }
+        double[] channelIdleTimes { get; }
+        double[] queueIdleTimes { get; }
 
-        IDiagram timeDiagram { get; }
+        ITimeDiagram timeDiagram { get; }
 
         bool preferFirstChannel { get; }
 
-        public DiagramCreator(int parkCount, int[] channelsIntencity, 
-            bool preferFirstChannel, IDiagram diagram)
+        /// <summary>
+        /// Создает новый заполнитель диаграммы.
+        /// </summary>
+        /// <param name="queueCapacity">Количество мест в очереди</param>
+        /// <param name="channelsIntencity">Массив пропускных способность каналов</param>
+        /// <param name="preferFirstChannel">Предпочитать первый канал?</param>
+        /// <param name="diagram">Заполняемая диаграмма</param>
+        public DiagramCreator(int queueCapacity, int[] channelsIntencity, bool preferFirstChannel, ITimeDiagram diagram)
         {
+            if (diagram.Completed)
+                throw new Exception("DiagramCreator::Диаграмма уже построена!");
+
             this.preferFirstChannel = preferFirstChannel;
             this.channelsIntencity = channelsIntencity;
 
-            channelFreeTime = new double[channelCount];
-            parkFreeTime = new double[parkCount];
+            channelIdleTimes = new double[channelCount];
+            queueIdleTimes = new double[queueCapacity];
 
             for (int i = 0; i < channelCount; i++)
-                channelFreeTime[i] = -1;
+                channelIdleTimes[i] = -1;
 
-            for (int i = 0; i < parkCount; i++)
-                parkFreeTime[i] = -1;
+            for (int i = 0; i < queueCapacity; i++)
+                queueIdleTimes[i] = -1;
 
             timeDiagram = diagram;
         }
 
-        int GetParkingPlaceIndex(double arrivalTime)
+        /// <summary>
+        /// Возвращает индекс доступного свободного места в указанный момент времени. Если такого нет, возвращает -1.
+        /// </summary>
+        /// <param name="arrivalTime">Момент времени</param>
+        /// <returns>Индекс свободного стояночного места</returns>
+        int GetQueuePlaceIndex(double arrivalTime)
         {
-            for (int i = 0; i < parksCount; i++)
+            for (int i = 0; i < queueCount; i++)
             {
-                if (parkFreeTime[i] < arrivalTime)
+                if (queueIdleTimes[i] < arrivalTime)
                     return i;
             }
 
             return -1;
         }
 
+        /// <summary>
+        /// Возвращает индекс доступного места обслуживания в указанный момент времени. Если такого нет, возвращает -1.
+        /// </summary>
+        /// <param name="arrivalTime">Момент времени</param>
+        /// <returns>Индекс свободного места обслуживания</returns>
         int GetNextPossibleChannel(double arrivalTime)
         {
             if (channelCount == 0)
                 return -1;
 
             int minIndex = 0;
-            double minimumValue = channelFreeTime[0];
+
+            double minimumValue = channelIdleTimes[0];
+
             for (int i = 0; i < channelCount; i++)
             {
-                if (preferFirstChannel && channelFreeTime[i] < arrivalTime)
+                if (preferFirstChannel && channelIdleTimes[i] < arrivalTime)
                     return i;
 
-                if (channelFreeTime[i] < minimumValue)
+                if (channelIdleTimes[i] < minimumValue)
                 {
-                    minimumValue = channelFreeTime[i];
+                    minimumValue = channelIdleTimes[i];
                     minIndex = i;
                 }
             }
@@ -68,24 +93,29 @@ namespace QTS.Core.Tools
             return minIndex;
         }
 
-        void GoToChannel(int channelIndex, double arrivalTime, 
-            RandomGenerator rnd)
+        /// <summary>
+        /// Создает новую линию в пути заявки, обслуженной на указанном месте обслуживания.
+        /// </summary>
+        /// <param name="channelIndex">Индекс используемого места обслуживания.</param>
+        /// <param name="arrivalTime">Время начала обслуживания.</param>
+        /// <param name="rnd">Используемый ГСЧ</param>
+        void CreateChannelLine(int channelIndex, double arrivalTime, RandomGenerator rnd)
         {
-            double clientSerivceTime = rnd.Next
-                (
-                channelsIntencity[channelIndex]
-                );
+            double clientSerivceTime = rnd.Next(channelsIntencity[channelIndex]);
 
-            double serviceStopTime = arrivalTime + clientSerivceTime;
-            channelFreeTime[channelIndex] = serviceStopTime;
+            double departureTime = arrivalTime + clientSerivceTime;
 
-            timeDiagram.PushChannelLine
-                (
-                channelIndex, arrivalTime, serviceStopTime
-                );
-            timeDiagram.PushServedPoint(serviceStopTime);
+            channelIdleTimes[channelIndex] = departureTime;
+
+            timeDiagram.PushChannelLine(channelIndex, arrivalTime, departureTime);
+            timeDiagram.PushServedPoint(departureTime);
         }
 
+        /// <summary>
+        /// Добавляет в систему новую заявку и строит ее путь.
+        /// </summary>
+        /// <param name="arrivalTime">Время прибытия заявки</param>
+        /// <param name="rnd">Импользуемый ГСЧ</param>
         public void PushClient(double arrivalTime, RandomGenerator rnd)
         {
             timeDiagram.PushStartPoint(arrivalTime);
@@ -94,43 +124,39 @@ namespace QTS.Core.Tools
 
             if (usingChannel == -1)
             {
-                timeDiagram.PushBreakPoint(arrivalTime);
+                timeDiagram.PushRefusedPoint(arrivalTime);
                 return;
             }
 
-            if (channelFreeTime[usingChannel] < arrivalTime)
+            if (channelIdleTimes[usingChannel] < arrivalTime)
             {
-                GoToChannel(usingChannel, arrivalTime, rnd);
+                CreateChannelLine(usingChannel, arrivalTime, rnd);
                 return;
             }
 
-            int parkIndex = GetParkingPlaceIndex(arrivalTime);
+            int queuePlaceIndex = GetQueuePlaceIndex(arrivalTime);
 
-            if (parkIndex == -1)
+            if (queuePlaceIndex == -1)
             {
-                timeDiagram.PushBreakPoint(arrivalTime);
+                timeDiagram.PushRefusedPoint(arrivalTime);
                 return;
             }
 
-            double parkStart = arrivalTime;
+            double queuedStart = arrivalTime;
 
-            timeDiagram.AddQueueClient();
+            timeDiagram.IncrementQueueClientCount();
 
-            for (int i = parkIndex; i >= 0; i--)
+            for (int i = queuePlaceIndex; i >= 0; i--)
             {
-                double parkEnd;
-                if (i != 0)
-                    parkEnd = parkFreeTime[i - 1];
-                else
-                    parkEnd = channelFreeTime[usingChannel];
+                double queuedEndTime = i != 0 ? queueIdleTimes[i - 1] : channelIdleTimes[usingChannel];
 
-                parkFreeTime[i] = parkEnd;
+                queueIdleTimes[i] = queuedEndTime;
 
-                timeDiagram.PushParkLine(i, parkStart, parkEnd);
-                parkStart = parkEnd;
+                timeDiagram.PushQueueLine(i, queuedStart, queuedEndTime);
+                queuedStart = queuedEndTime;
             }
 
-            GoToChannel(usingChannel, parkFreeTime[0], rnd);
+            CreateChannelLine(usingChannel, queueIdleTimes[0], rnd);
         }
     }
 }

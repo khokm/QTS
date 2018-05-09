@@ -35,14 +35,14 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Diagram\IAnalyzable.cs" />
-    <Compile Include="Diagram\IDiagram.cs" />
-    <Compile Include="Graphics\IController.cs" />
+    <Compile Include="Diagram\IDiagramData.cs" />
+    <Compile Include="Diagram\ITimeDiagram.cs" />
+    <Compile Include="Graphics\IDiagramViewController.cs" />
     <Compile Include="Helpers\Permuter.cs" />
     <Compile Include="Helpers\RandomGenerator.cs" />
-    <Compile Include="IForm.cs" />
+    <Compile Include="ICallbackUi.cs" />
     <Compile Include="IGraph.cs" />
-    <Compile Include="Parameters.cs" />
+    <Compile Include="ParametersContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QtsController.cs" />
     <Compile Include="TimeDiagram.cs" />

@@ -3,52 +3,66 @@ using QTS.Core.Helpers;
 
 namespace QTS.Core.Tools
 {
-    class Solver
+    /// <summary>
+    /// Класс, содержащий методы моделирования и анализа диграммы.
+    /// </summary>
+    static class Solver
     {
-        public static void FillDiagram(Parameters parameters, IDiagram timeDiagram)
+        /// <summary>
+        /// Заполняет диаграмму значениями (моделирует процесс работы системы)
+        /// </summary>
+        /// <param name="parameters">Параметры системы</param>
+        /// <param name="timeDiagram">Заполняемая временная диаграмма</param>
+        public static void FillDiagram(ParametersContainer parameters, ITimeDiagram timeDiagram)
         {
-            RandomGenerator rnd = new RandomGenerator(parameters.minRandomValue);
+            RandomGenerator rnd = new RandomGenerator(parameters.MinRandomValue);
             double workTime = 0;
 
-            DiagramCreator model = new DiagramCreator(parameters.queueCapacity, parameters.channelsIntencity, parameters.preferFirstChannel, timeDiagram);
+            DiagramCreator model = new DiagramCreator(parameters.QueueCapacity, parameters.ChannelsIntencity, parameters.PreferFirstChannel, timeDiagram);
 
-            for (int i = 0; !parameters.hasClientLimit || i < parameters.maxClients; i++)
+            for (int i = 0; !parameters.HasClientLimit || i < parameters.ClientLimit; i++)
             {
-                workTime += rnd.Next(parameters.threadIntencity);
+                workTime += rnd.Next(parameters.ThreadIntencity);
 
-                if (parameters.hasTimeLimit && workTime > parameters.maxTime)
+                if (parameters.HasTimeLimit && workTime > parameters.TimeLimit)
                     break;
 
                 model.PushClient(workTime, rnd);
             }
 
-            timeDiagram.CompleteDiagram();
+            timeDiagram.FinishDiagram();
         }
 
-
-        public static void AddPointsToGraph(IGraph[] graphs, int queueMaximumCapacity, double currentX, IAnalyzable timeDiagram)
+        /// <summary>
+        /// Создает новые точки на каждом из графиков показателей. Используется для синтеза СМО.
+        /// </summary>
+        /// <param name="graphs">Массив графиков показателей</param>
+        /// <param name="queueMaximumCapacity">Максимальное количество мест в очереди из всех анализируемых систем</param>
+        /// <param name="currentX">Текущая координата графика по X, куда будет внесена точка.</param>
+        /// <param name="timeDiagram">Анализируемая диаграмма</param>
+        public static void AddPointsToGraph(IGraph[] graphs, int queueMaximumCapacity, double currentX, IDiagramData timeDiagram)
         {
             var info = new DiagramAnalyzer(timeDiagram);
 
             int k = 0;
 
-            graphs[k++].AddPoint(info.systemThroughput, currentX);
-            graphs[k++].AddPoint(info.servedProbality, currentX);
-            graphs[k++].AddPoint(info.lostProbality, currentX);
+            graphs[k++].AddPoint(info.SystemThroughput, currentX);
+            graphs[k++].AddPoint(info.ServedProbality, currentX);
+            graphs[k++].AddPoint(info.RefuseProbality, currentX);
 
-            var cbps = info.channelBusyProbality;
+            var cbps = info.ChannelBusyProbalies;
 
             for (int i = 0; i < cbps.Length; i++)
                 graphs[k++].AddPoint(cbps[i], currentX);
 
-            graphs[k++].AddPoint(info.averageBusyChannelCount, currentX);
+            graphs[k++].AddPoint(info.AverageBusyChannelCount, currentX);
 
-            var cips = info.channelIdleProbality;
+            var cips = info.ChannelIdleProbality;
 
             for (int i = 0; i < cips.Length; i++)
                 graphs[k++].AddPoint(cips[i], currentX);
 
-            var qbps = info.queueBusyProbality;
+            var qbps = info.QueueBusyProbality;
 
             for (int i = 0; i < qbps.Length; i++)
                 graphs[k++].AddPoint(qbps[i], currentX);
@@ -58,69 +72,80 @@ namespace QTS.Core.Tools
             for(int i = 0; i < queueDiff; i++)
                 graphs[k++].AddPoint(0, currentX);
 
-            graphs[k++].AddPoint(info.averageClientCountInQueue, currentX);
-            graphs[k++].AddPoint(info.averageClientQueueWaitingTime, currentX);
-            graphs[k++].AddPoint(info.averageClientServiceTime, currentX);
-            graphs[k++].AddPoint(info.averageClientTime, currentX);
-            graphs[k++].AddPoint(info.averageClientCountInSystem, currentX);
+            graphs[k++].AddPoint(info.AverageClientCountInQueue, currentX);
+            graphs[k++].AddPoint(info.AverageClientQueueWaitingTime, currentX);
+            graphs[k++].AddPoint(info.AverageClientServiceTime, currentX);
+            graphs[k++].AddPoint(info.SummaryAverageClientTime, currentX);
+            graphs[k++].AddPoint(info.AverageClientCount, currentX);
         }
 
-        public static string DiagramAnalyze(IAnalyzable timeDiagram)
+        /// <summary>
+        /// Анализирует диаграмму и генерирует текстовый отчет.
+        /// </summary>
+        /// <param name="timeDiagram">Анализируемая диаграмма.</param>
+        /// <returns></returns>
+        public static string GetDiagramAnalyzeText(IDiagramData timeDiagram)
         {
             string analyzeText = "";
 
-            if (timeDiagram.systemWorkTime == 0)
+            if (timeDiagram.SystemWorkTime == 0)
                 return "В процессе работы системы не поступило ни одной заявки! Анализ невозможен.";
 
             analyzeText += "Результаты работы системы:\r\n";
 
-            analyzeText += " 1. Количество заявок: " + timeDiagram.clientsCount + " шт\r\n";
-            analyzeText += " 2. Время работы: " + timeDiagram.systemWorkTime + " часов\r\n\r\n";
+            analyzeText += " 1. Количество заявок: " + timeDiagram.SummaryClientCount + " шт\r\n";
+            analyzeText += " 2. Время работы: " + timeDiagram.SystemWorkTime + " часов\r\n\r\n";
 
             var info = new DiagramAnalyzer(timeDiagram);
 
             analyzeText += "Анализ временной диаграммы:\r\n";
 
-            var names = GenerateGraphNames(timeDiagram.channelCount, timeDiagram.queueCapacity);
+            var names = GenerateGraphNames(timeDiagram.ChannelCount, timeDiagram.QueueCapacity);
 
             int k = 0;
 
-            analyzeText += " " + names[k++] + ": " + info.systemThroughput + " шт/ч\r\n";
+            analyzeText += " " + names[k++] + ": " + info.SystemThroughput + " шт/ч\r\n";
 
-            analyzeText += " " + names[k++] + ": " + info.servedProbality + "\r\n";
+            analyzeText += " " + names[k++] + ": " + info.ServedProbality + "\r\n";
 
-            analyzeText += " " + names[k++] + ": " + info.lostProbality + "\r\n";
+            analyzeText += " " + names[k++] + ": " + info.RefuseProbality + "\r\n";
 
-            var cbps = info.channelBusyProbality;
+            var cbps = info.ChannelBusyProbalies;
 
             for (int i = 0; i < cbps.Length; i++)
                 analyzeText += " " + names[k++] + ": " + cbps[i] + "\r\n";
 
-            analyzeText += " " + names[k++] + ": " + info.averageBusyChannelCount + "\r\n";
+            analyzeText += " " + names[k++] + ": " + info.AverageBusyChannelCount + "\r\n";
 
-            var cips = info.channelIdleProbality;
+            var cips = info.ChannelIdleProbality;
 
             for (int i = 0; i < cips.Length; i++)
                 analyzeText += " " + names[k++] + ": " + cips[i] + "\r\n";
 
-            var qbps = info.queueBusyProbality;
+            var qbps = info.QueueBusyProbality;
 
             for (int i = 0; i < qbps.Length; i++)
                 analyzeText += " " + names[k++] + ": " + qbps[i] + "\r\n";
 
-            analyzeText += " " + names[k++] + ": " + info.averageClientCountInQueue + " шт\r\n";
+            analyzeText += " " + names[k++] + ": " + info.AverageClientCountInQueue + " шт\r\n";
 
-            analyzeText += " " + names[k++] + ": " + info.averageClientQueueWaitingTime + " часов\r\n";
+            analyzeText += " " + names[k++] + ": " + info.AverageClientQueueWaitingTime + " часов\r\n";
 
-            analyzeText += " " + names[k++] + ": " + info.averageClientServiceTime + " часов\r\n";
+            analyzeText += " " + names[k++] + ": " + info.AverageClientServiceTime + " часов\r\n";
 
-            analyzeText += " " + names[k++] + ": " + info.averageClientTime + " часов\r\n";
+            analyzeText += " " + names[k++] + ": " + info.SummaryAverageClientTime + " часов\r\n";
 
-            analyzeText += " " + names[k++] + ": " + info.averageClientCountInSystem + " шт";
+            analyzeText += " " + names[k++] + ": " + info.AverageClientCount + " шт";
 
             return analyzeText;
         }
 
+        /// <summary>
+        /// Генерирует массив названий показателей (т.е. пропускная способность системы, вероятность обслуживания, отказа и т.д.)
+        /// </summary>
+        /// <param name="channelCount">Количество мест обслуживания в системе</param>
+        /// <param name="queueCapacity">Количество стояночных мест в системе</param>
+        /// <returns></returns>
         public static string[] GenerateGraphNames(int channelCount, int queueCapacity)
         {
             int totalGraphCount = 9 + channelCount * 2 + queueCapacity;
@@ -142,7 +167,6 @@ namespace QTS.Core.Tools
 
             for(int i = 0; i < queueCapacity; i++)
                 names[k++] = string.Format("7.{0}. Вероятность того, что в очереди будет {0} заявок", i + 1);
-
 
             names[k++] = "8. Среднее количество заявок в очереди";
             names[k++] = "9. Среднее время ожидания заявки в очереди";

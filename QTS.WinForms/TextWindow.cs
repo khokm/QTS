@@ -4,6 +4,9 @@ using System.Windows.Forms;
 
 namespace QTS.WinForms
 {
+    /// <summary>
+    /// Простое текстовое окно с возможностью сохранения содержимого в файл.
+    /// </summary>
     public partial class TextWindow : Form
     {
         public TextWindow(string diagramAnalyze)

@@ -7,76 +7,91 @@ using QTS.Core.Tools;
 
 namespace QTS.Core
 {
+    /// <summary>
+    /// Класс, управляющий работой программы.
+    /// Действия пользователя нужно перенаправлять в этот класс,
+    /// а обратная связь осуществляется через IUserInterface.
+    /// </summary>
     public class QtsController
     {
-        IController diagramController = null;
-        IAnalyzable diagram = null;
+        IDiagramViewController diagramViewController = null;
+        IDiagramData diagram = null;
         string diagramAnalyze = "";
 
-        IForm callbackForm;
+        ICallbackUi CallbackUi { get; }
 
-        public QtsController(IForm callbackForm)
+        /// <summary>
+        /// Создает новый экземпляр приложения для построения и анализа СМО.
+        /// </summary>
+        /// <param name="callbackUi">Используемый для обратной связи пользовательский интерфейс</param>
+        public QtsController(ICallbackUi callbackUi)
         {
-            this.callbackForm = callbackForm;
+            this.CallbackUi = callbackUi;
         }
 
-        void ResetApplicationData()
+        /// <summary>
+        /// Удаляет текущую используемую диаграмму.
+        /// </summary>
+        void RemoveCurrentDiagram()
         {
-            diagramController = null;
+            diagramViewController = null;
             diagram = null;
             diagramAnalyze = "";
-            callbackForm.RemoveModel();
+            CallbackUi.RemoveDiagramView();
         }
 
-        //Diagram Control Buttons
-        //
+        #region Вызовы управления отображением диаграммы
         public void GoToDiagramStart()
         {
-            if (diagramController == null)
+            if (diagramViewController == null)
                 return;
 
-            diagramController.GoToStart();
+            diagramViewController.GoToStart();
         }
 
         public void GoToDiagramEnd()
         {
-            if (diagramController == null)
+            if (diagramViewController == null)
                 return;
 
-            diagramController.GoToEnd();
+            diagramViewController.GoToEnd();
         }
 
         public void GoToDiagramNext()
         {
-            if (diagramController == null)
+            if (diagramViewController == null)
                 return;
 
-            diagramController.StepForward();
+            diagramViewController.StepForward();
         }
 
         public void GoToDiagramPrev()
         {
-            if (diagramController == null)
+            if (diagramViewController == null)
                 return;
 
-            diagramController.StepBack();
+            diagramViewController.StepBack();
         }
 
         public void ShowPreviousLines(bool show)
         {
-            if (diagramController == null)
+            if (diagramViewController == null)
                 return;
 
-            diagramController.showPreviousLines = show;
+            diagramViewController.ShowPreviousLines = show;
         }
+        #endregion
 
-        //Methods
-        //
-        public void CreateTimeDiagram(Parameters parameters)
+        #region Вызовы построения и анализа диаграммы и синтеза СМО.
+        /// <summary>
+        /// Вызывает создание диаграммы по заданным значениям. Результатом является отображение диграммы на главной панели.
+        /// </summary>
+        /// <param name="parameters">Параметры диграммы, заданные пользователем</param>
+        public void MakeDiagram(ParametersContainer parameters)
         {
-            ResetApplicationData();
+            RemoveCurrentDiagram();
 
-            var timeDiagram = callbackForm.CreateDiagram(parameters.channelCount, parameters.queueCapacity);
+            var timeDiagram = CallbackUi.CreateNewDiagram(parameters.channelCount, parameters.QueueCapacity);
 
             try
             {
@@ -84,49 +99,58 @@ namespace QTS.Core
             }
             catch(Exception ex)
             {
-                callbackForm.ShowError("Ошибка вычислений", ex.Message);
+                CallbackUi.ShowError("Ошибка вычислений", ex.Message);
                 return;
             }
 
             diagram = timeDiagram;
 
-            int clientCount = timeDiagram.clientsCount;
+            int clientCount = timeDiagram.SummaryClientCount;
 
-            bool showDiagram = clientCount < 200 || callbackForm.YesNoDialog("Предупреждение", "Временная диаграмма содержит" + clientCount + " линий.\nЕе отрисовка может вызвать замедление работы компьютера.\n Отрисовать диаграмму?\n(анализ диаграммы возможен при любом выборе)");
+            bool showDiagram = clientCount < 200 || CallbackUi.YesNoDialog("Предупреждение", "Временная диаграмма содержит" + clientCount + " линий.\nЕе отрисовка может вызвать замедление работы компьютера.\n Отрисовать диаграмму?\n(анализ диаграммы возможен при любом выборе)");
 
             if (showDiagram)
             {
-                diagramController = timeDiagram;
-                callbackForm.SetModel(timeDiagram);
-                diagramController.OnVisualUpdated += callbackForm.GetFormUpdateAction();
-                diagramController.GoToEnd();
+                diagramViewController = timeDiagram;
+                CallbackUi.SetDiagramView(timeDiagram);
+                diagramViewController.OnViewUpdated += CallbackUi.InvalidateDiagramView;
+                diagramViewController.GoToEnd();
             }
         }
 
-        public void ShowDiagramAnalyze()
+        /// <summary>
+        /// Вызывает показ отчета об анализе диграммы. Результатом является отображение диграммы в текстовом окне.
+        /// </summary>
+        public void MakeDiagramAnalyze()
         {
             if (diagram == null)
                 return;
 
             if (diagramAnalyze.Length == 0)
-                diagramAnalyze = Solver.DiagramAnalyze(diagram);
+                diagramAnalyze = Solver.GetDiagramAnalyzeText(diagram);
 
-            callbackForm.ShowTextWindow("Анализ диаграммы", diagramAnalyze);
+            CallbackUi.ShowTextWindow("Анализ диаграммы", diagramAnalyze);
         }
 
-        public void CreateGraphs(Parameters parameters, int minPlaceCount, int maxPlaceCount)
+        /// <summary>
+        /// Вызывает синтез СМО. Результатом является набор графиков и отчетов, сохраненные в указанные папки.
+        /// </summary>
+        /// <param name="parameters">Параметры, задаваемые пользователем.</param>
+        /// <param name="minQueuePlaceCount">Минимальное количество мест в очереди</param>
+        /// <param name="maxQueuePlaceCount">Максимальное количество мест в очереди</param>
+        public void MakeSynthesis(ParametersContainer parameters, int minQueuePlaceCount, int maxQueuePlaceCount)
         {
-            string folder = callbackForm.GetImagePathFolder("Выберите папку для сохранения графиков");
+            string folder = CallbackUi.GetImagePathFolder("Выберите папку для сохранения графиков");
 
             if (folder == "")
                 return;
 
-            string textFolder = callbackForm.GetImagePathFolder("Выберите папку для сохранения отчетов");
+            string textFolder = CallbackUi.GetImagePathFolder("Выберите папку для сохранения отчетов");
 
             if (textFolder == "")
                 return;
 
-            var graphNames = Solver.GenerateGraphNames(parameters.channelCount, maxPlaceCount);
+            var graphNames = Solver.GenerateGraphNames(parameters.channelCount, maxQueuePlaceCount);
 
             int totalGraphCount = graphNames.Length;
 
@@ -135,31 +159,31 @@ namespace QTS.Core
 
             for (int i = 0; i < totalGraphCount; i++)
             {
-                var oxyGraph = callbackForm.CreateGraph();
+                var oxyGraph = CallbackUi.CreateGraph();
 
-                oxyGraph.SetTitle(graphNames[i]);
-                oxyGraph.AddLine("");
+                oxyGraph.Title = graphNames[i];
+                oxyGraph.StartLine("");
 
                 graphs[i] = oxyGraph;
             }
 
             try
             {
-                for(int k = minPlaceCount; k <= maxPlaceCount; k++)
+                for(int k = minQueuePlaceCount; k <= maxQueuePlaceCount; k++)
                 {
-                    parameters.queueCapacity = k;
-                    var diagram = callbackForm.CreateDiagram(parameters.channelCount, parameters.queueCapacity);
+                    parameters.QueueCapacity = k;
+                    var diagram = CallbackUi.CreateNewDiagram(parameters.channelCount, parameters.QueueCapacity);
 
                     Solver.FillDiagram(parameters, diagram);
-                    Solver.AddPointsToGraph(graphs, maxPlaceCount, k, diagram);
+                    Solver.AddPointsToGraph(graphs, maxQueuePlaceCount, k, diagram);
 
-                    var analyzeText = Solver.DiagramAnalyze(diagram);
+                    var analyzeText = Solver.GetDiagramAnalyzeText(diagram);
                     File.WriteAllText(textFolder + "/Отчет для кол-ва мест " + k + ".txt", analyzeText);
                 }
             }
             catch(Exception ex)
             {
-                callbackForm.ShowError("Ошибка вычислений", ex.Message);
+                CallbackUi.ShowError("Ошибка вычислений", ex.Message);
                 return;
             }
 
@@ -172,5 +196,6 @@ namespace QTS.Core
                 bitmap.Save(folder + "/" + graphNames[i] + ".png");
             }
         }
+        #endregion
     }
 }

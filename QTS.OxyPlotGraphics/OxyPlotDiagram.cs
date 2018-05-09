@@ -7,6 +7,9 @@ using QTS.Core;
 
 namespace QTS.OxyPlotGraphics
 {
+    /// <summary>
+    /// Реализация временной диаграммы с использованием библиотеки OxyPlot.
+    /// </summary>
     public class OxyPlotDiagram : TimeDiagram
     {
         OxyPlotGraph graph;
@@ -15,15 +18,14 @@ namespace QTS.OxyPlotGraphics
         {
             get
             {
-                if (!diagramCompleted)
+                if (!Completed)
                     throw new Exception("Диаграмма не завершена!");
 
-                return graph.plotModel;
+                return graph.PlotModel;
             }
         }
 
-        public OxyPlotDiagram(int channelCount, int queueCapacity) : 
-            base(channelCount, queueCapacity)
+        public OxyPlotDiagram(int channelCount, int queueCapacity) : base(channelCount, queueCapacity)
         {
             graph = new OxyPlotGraph();
         }
@@ -33,22 +35,22 @@ namespace QTS.OxyPlotGraphics
             graph.AddPoint(y, x);
         }
 
-        protected override void OnLineStarted(double y, double x)
+        protected override void OnPathStarted(double y, double x)
         {
-            graph.AddLine("Клиент " + (clientsCount + 1));
+            graph.StartLine("Заявка " + (SummaryClientCount + 1));
 
-            graph.currentLine.MouseDown += LineMouseDown;
+            graph.CurrentLine.MouseDown += LineMouseDown;
 
             AddAnnotation(y, x, VerticalAlignment.Bottom);
         }
 
-        protected override void OnLineFinished(double y, double x)
+        protected override void OnPathFinished(double y, double x)
         {
             AddAnnotation(y, x, VerticalAlignment.Top);
             graph.CompleteLine();
         }
 
-        protected override void FinishVisualDiagram()
+        protected override void OnDiagramFinished()
         {
             var categoryAxis = new CategoryAxis()
             {
@@ -59,26 +61,20 @@ namespace QTS.OxyPlotGraphics
 
                 IsTickCentered = true,
 
-                MinimumRange = Math.Min(10, topY * 2),
-                MaximumRange = topY * 2,
+                MinimumRange = Math.Min(10, TopY * 2),
+                MaximumRange = TopY * 2,
                 AbsoluteMinimum = -5,
-                AbsoluteMaximum = topY * 2,
+                AbsoluteMaximum = TopY * 2,
             };
 
             categoryAxis.ActualLabels.Add("Отказ");
             categoryAxis.ActualLabels.Add("Обслужено");
 
-            for (int i = 0; i < queueCapacity; i++)
-                categoryAxis.ActualLabels.Add
-                    (
-                    "Место " + (queueCapacity - i)
-                    );
+            for (int i = 0; i < QueueCapacity; i++)
+                categoryAxis.ActualLabels.Add("Место " + (QueueCapacity - i));
 
-            for (int i = 0; i < channelCount; i++)
-                categoryAxis.ActualLabels.Add
-                    (
-                    "Канал " + (channelCount - i)
-                    );
+            for (int i = 0; i < ChannelCount; i++)
+                categoryAxis.ActualLabels.Add("Канал " + (ChannelCount - i));
 
             categoryAxis.ActualLabels.Add("Заявки");
 
@@ -89,15 +85,15 @@ namespace QTS.OxyPlotGraphics
                 MaximumRange = 100000
             };
 
-            graph.plotModel.Axes.Add(categoryAxis);
-            graph.plotModel.Axes.Add(xAxe);
+            graph.PlotModel.Axes.Add(categoryAxis);
+            graph.PlotModel.Axes.Add(xAxe);
         }
 
-        protected override void UpdateVisualContent(int visibleLineIndex)
+        protected override void UpdateView(int visibleLineIndex)
         {
             var series = plotModel.Series;
 
-            if (showPreviousLines)
+            if (ShowPreviousLines)
             {
                 for (int i = 0; i < series.Count; i++)
                     series[i].IsVisible = i <= visibleLineIndex;
@@ -115,13 +111,13 @@ namespace QTS.OxyPlotGraphics
             {
                 X = x,
                 Y = y,
-                Text = (graph.plotModel.Series.Count + 1).ToString(),
+                Text = (graph.PlotModel.Series.Count + 1).ToString(),
                 TextVerticalAlignment = textAlligment
             };
 
             pointAnnotation1.MouseDown += LineMouseDown;
 
-            graph.plotModel.Annotations.Add(pointAnnotation1);
+            graph.PlotModel.Annotations.Add(pointAnnotation1);
         }
 
         void LineMouseDown(object sender, OxyMouseDownEventArgs e)
@@ -130,21 +126,15 @@ namespace QTS.OxyPlotGraphics
             {
                 if (sender is LineSeries)
                 {
-                    int lineIndex = int.Parse
-                        (
-                        ((LineSeries)sender).Title.Remove(0, 7)
-                        ) - 1;
+                    int lineIndex = int.Parse(((LineSeries)sender).Title.Remove(0, 7)) - 1;
 
-                    SetDiagramVisibility(lineIndex);
+                    SetVisibleLinesCount(lineIndex);
                 }
                 else
                 {
-                    int lineIndex = int.Parse
-                        (
-                        ((PointAnnotation)sender).Text
-                        ) - 1;
+                    int lineIndex = int.Parse(((PointAnnotation)sender).Text) - 1;
 
-                    SetDiagramVisibility(lineIndex);
+                    SetVisibleLinesCount(lineIndex);
                 }
             }
         }
