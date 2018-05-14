@@ -41,7 +41,7 @@ namespace QTS.WinForms
         /// <summary>
         /// Считывает данные с правой панели.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Набор параметров для построения диаграммы.</returns>
         private ParametersContainer ParseDiagramParameters()
         {
             int threadIntencity = (int)threadIntencity_Numeric.Value;
@@ -126,7 +126,7 @@ namespace QTS.WinForms
         }
         #endregion
 
-        #region Обработчики кнопок верхней панели (управление над отображением диаграммы)
+        #region Обработчики кнопок верхней панели (управление отображением диаграммы)
         private void toStart_Button_Click(object sender, EventArgs e)
         {
             controller.GoToDiagramStart();
@@ -177,6 +177,11 @@ namespace QTS.WinForms
                 return;
 
             controller.MakeSynthesis(parameters, form.MinumumQueuePlaces, form.MaximumQueuePlaces);
+        }
+
+        private void управлениеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new AboutControlsForm().ShowDialog();
         }
         #endregion
 

@@ -46,11 +46,19 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AboutControlsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutControlsForm.Designer.cs">
+      <DependentUpon>AboutControlsForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="EnterServicePlaceCountForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -80,6 +88,9 @@
     <Compile Include="TextWindow.Designer.cs">
       <DependentUpon>TextWindow.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="AboutControlsForm.resx">
+      <DependentUpon>AboutControlsForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="EnterServicePlaceCountForm.resx">
       <DependentUpon>EnterServicePlaceCountForm.cs</DependentUpon>
     </EmbeddedResource>
