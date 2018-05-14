@@ -34,9 +34,15 @@
         /// Просит пользователя выбрать папку для сохранения данных.
         /// </summary>
         /// <param name="description">Описание сохраняемого содержимого.</param>
+        /// <param name="defaultPath">Путь к папке, выбранный по умолчанию.</param>
         /// <returns>Путь к выбранной папке.</returns>
-        string GetFolderPath(string description);
+        string GetFolderPath(string description, string defaultPath="");
 
+        /// <summary>
+        /// Открывает папку в новом окне.
+        /// </summary>
+        /// <param name="path">Путь к папке.</param>
+        void StartExplorer(string path);
         /// <summary>
         /// Показывает пользователю текстовое окно.
         /// </summary>

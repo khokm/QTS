@@ -186,7 +186,7 @@ namespace QTS.Core
 
             string graphsFolder, reportsFolder;
 
-            if ((graphsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения графиков")) == "" || (reportsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения отчетов")) == "")
+            if ((graphsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения графиков")) == "" || (reportsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения отчетов", graphsFolder)) == "")
                 return;
 
             var graphNames = Solver.GenerateGraphNames(parameters.ChannelCount, maxQueuePlaceCount);
@@ -259,6 +259,12 @@ namespace QTS.Core
 
             if (noReportRights)
                 CallbackUi.ShowWarning("", "Не удалось создать файлы отчетов.\nВозможно, не достаточно прав для записи в выбранную папку.");
+
+            if(!noGraphRights)
+                CallbackUi.StartExplorer(graphsFolder);
+
+            if (!noReportRights && reportsFolder != graphsFolder)
+                CallbackUi.StartExplorer(reportsFolder);
 
         }
         #endregion

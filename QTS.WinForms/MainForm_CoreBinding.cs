@@ -1,6 +1,7 @@
 ﻿using System.Windows.Forms;
 using QTS.Core;
 using QTS.OxyPlotGraphics;
+using System.Diagnostics;
 
 namespace QTS.WinForms
 {
@@ -28,9 +29,9 @@ namespace QTS.WinForms
             return MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
         }
 
-        public string GetFolderPath(string description)
+        public string GetFolderPath(string description, string defaultFolder)
         {
-            using (var fbd = new FolderBrowserDialog() { Description = description })
+            using (var fbd = new FolderBrowserDialog() { Description = description, SelectedPath = defaultFolder })
             {
                 DialogResult result = fbd.ShowDialog();
 
@@ -39,6 +40,11 @@ namespace QTS.WinForms
             }
 
             return "";
+        }
+
+        public void StartExplorer(string path)
+        {
+            Process.Start(path);
         }
 
         public void ShowTextWindow(string title, string text)
