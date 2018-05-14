@@ -8,23 +8,13 @@ namespace QTS.WinForms
      * Реализация главной формы как пользовательского интерфейса для обратной связи
      */
 
-    partial class MainForm : ICallbackUi
+    partial class MainForm : ICallbackUi<OxyPlotDiagram>
     {
-        public void InvalidateDiagramView() => plot1.Invalidate();
+        public void InvalidateDiagramView() => plot1.InvalidatePlot(false);
 
-        public IGraph CreateGraph()
+        public void SetDiagramView(OxyPlotDiagram diagram)
         {
-            return new OxyPlotGraph();
-        }
-
-        public TimeDiagram CreateNewDiagram(int channelCount, int queueCapacity)
-        {
-            return new OxyPlotDiagram(channelCount, queueCapacity);
-        }
-
-        public void SetDiagramView(TimeDiagram diagram)
-        {
-            plot1.Model = ((OxyPlotDiagram)diagram).plotModel;
+            plot1.Model = diagram.plotModel;
         }
 
         public void RemoveDiagramView()
@@ -38,7 +28,7 @@ namespace QTS.WinForms
             return MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
         }
 
-        public string GetImagePathFolder(string description)
+        public string GetFolderPath(string description)
         {
             using (var fbd = new FolderBrowserDialog() { Description = description })
             {
@@ -59,6 +49,11 @@ namespace QTS.WinForms
         public void ShowError(string title, string message)
         {
             MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        public void ShowWarning(string title, string message)
+        {
+            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }
 }

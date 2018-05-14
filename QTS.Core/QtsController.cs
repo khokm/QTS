@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using QTS.Core.Diagram;
 using QTS.Core.Graphics;
@@ -12,21 +11,25 @@ namespace QTS.Core
     /// Действия пользователя нужно перенаправлять в этот класс,
     /// а обратная связь осуществляется через IUserInterface.
     /// </summary>
-    public class QtsController
+    /// <typeparam name="T">Используемая реализация временной диаграммы.</typeparam>
+    public class QtsController<T> where T : TimeDiagram
     {
         IDiagramViewController diagramViewController = null;
         IDiagramData diagram = null;
         string diagramAnalyze = "";
 
-        ICallbackUi CallbackUi { get; }
+        ICallbackUi<T> CallbackUi { get; }
+        IGraphicsFactory<T> GraphicsFactory { get; }
 
         /// <summary>
         /// Создает новый экземпляр приложения для построения и анализа СМО.
         /// </summary>
         /// <param name="callbackUi">Используемый для обратной связи пользовательский интерфейс</param>
-        public QtsController(ICallbackUi callbackUi)
+        /// <param name="graphicsFactory">Фабрика для создания графических элементов.</param>
+        public QtsController(ICallbackUi<T> callbackUi, IGraphicsFactory<T> graphicsFactory)
         {
-            this.CallbackUi = callbackUi;
+            CallbackUi = callbackUi;
+            GraphicsFactory = graphicsFactory;
         }
 
         /// <summary>
@@ -38,6 +41,31 @@ namespace QTS.Core
             diagram = null;
             diagramAnalyze = "";
             CallbackUi.RemoveDiagramView();
+        }
+
+        /// <summary>
+        /// Проверяет корректность введенных параметров.
+        /// </summary>
+        /// <param name="parameters">Параметры для построения диаграммы, которые нужно проверить на правильность.</param>
+        /// <returns></returns>
+        public bool CheckParametersValid(ParametersContainer parameters)
+        {
+            if (!parameters.HasTimeLimit && !parameters.HasClientLimit)
+            {
+                CallbackUi.ShowError("Построить временную диаграмму", "Система не имеет ограничений ни по времени, ни по заявкам.");
+                return false;
+            }
+            
+            if (parameters.ChannelCount == 0)
+                CallbackUi.ShowWarning("Построить временную диаграмму", "Система не имеет мест обслуживания.\nСледовательно, все заявки будут отклонены.");
+
+            if (parameters.ChannelCount < 0 || parameters.QueueCapacity < 0)
+            {
+                CallbackUi.ShowError("Эта ошибка никогда не вылезет", "Надо было юзать unit");
+                return false;
+            }
+
+            return true;
         }
 
         #region Вызовы управления отображением диаграммы
@@ -89,30 +117,34 @@ namespace QTS.Core
         /// <param name="parameters">Параметры диграммы, заданные пользователем</param>
         public void MakeDiagram(ParametersContainer parameters)
         {
+            if (!CheckParametersValid(parameters))
+                return;
+
             RemoveCurrentDiagram();
 
-            var timeDiagram = CallbackUi.CreateNewDiagram(parameters.channelCount, parameters.QueueCapacity);
+            var timeDiagram = GraphicsFactory.CreateEmptyDiagram(parameters.ChannelCount, parameters.QueueCapacity);
 
             try
             {
                 Solver.FillDiagram(parameters, timeDiagram);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                CallbackUi.ShowError("Ошибка вычислений", ex.Message);
+                CallbackUi.ShowError("Ошибка вычислений", "При моделировании процесса возникло исключение:\n" + ex.Message);
                 return;
             }
 
+            //Сохраним ссылку на диаграмму, чтобы позже по команде пользователя провести ее анализ.
             diagram = timeDiagram;
 
-            int clientCount = timeDiagram.SummaryClientCount;
+            int clientCount = diagram.SummaryClientCount;
 
             bool showDiagram = clientCount < 200 || CallbackUi.YesNoDialog("Предупреждение", "Временная диаграмма содержит" + clientCount + " линий.\nЕе отрисовка может вызвать замедление работы компьютера.\n Отрисовать диаграмму?\n(анализ диаграммы возможен при любом выборе)");
 
             if (showDiagram)
             {
-                diagramViewController = timeDiagram;
                 CallbackUi.SetDiagramView(timeDiagram);
+                diagramViewController = timeDiagram;
                 diagramViewController.OnViewUpdated += CallbackUi.InvalidateDiagramView;
                 diagramViewController.GoToEnd();
             }
@@ -124,7 +156,10 @@ namespace QTS.Core
         public void MakeDiagramAnalyze()
         {
             if (diagram == null)
+            {
+                CallbackUi.ShowError("Анализ диаграммы", "Диаграмма еще не создана.");
                 return;
+            }
 
             if (diagramAnalyze.Length == 0)
                 diagramAnalyze = Solver.GetDiagramAnalyzeText(diagram);
@@ -140,26 +175,29 @@ namespace QTS.Core
         /// <param name="maxQueuePlaceCount">Максимальное количество мест в очереди</param>
         public void MakeSynthesis(ParametersContainer parameters, int minQueuePlaceCount, int maxQueuePlaceCount)
         {
-            string folder = CallbackUi.GetImagePathFolder("Выберите папку для сохранения графиков");
-
-            if (folder == "")
+            if (!CheckParametersValid(parameters))
                 return;
 
-            string textFolder = CallbackUi.GetImagePathFolder("Выберите папку для сохранения отчетов");
+            if (maxQueuePlaceCount <= minQueuePlaceCount || minQueuePlaceCount < 0 || maxQueuePlaceCount < 0)
+            {
+                CallbackUi.ShowError("Синтез СМО", "Некорректные значения градиента КМО");
+                return;
+            }
 
-            if (textFolder == "")
+            string graphsFolder, reportsFolder;
+
+            if ((graphsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения графиков")) == "" || (reportsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения отчетов")) == "")
                 return;
 
-            var graphNames = Solver.GenerateGraphNames(parameters.channelCount, maxQueuePlaceCount);
+            var graphNames = Solver.GenerateGraphNames(parameters.ChannelCount, maxQueuePlaceCount);
 
             int totalGraphCount = graphNames.Length;
 
-            var analyzers = new List<DiagramAnalyzer>();
             var graphs = new IGraph[totalGraphCount];
 
             for (int i = 0; i < totalGraphCount; i++)
             {
-                var oxyGraph = CallbackUi.CreateGraph();
+                var oxyGraph = GraphicsFactory.CreateEmptyGraph();
 
                 oxyGraph.Title = graphNames[i];
                 oxyGraph.StartLine("");
@@ -167,25 +205,38 @@ namespace QTS.Core
                 graphs[i] = oxyGraph;
             }
 
-            try
+            bool noReportRights = false;
+
+            for (int i = minQueuePlaceCount; i <= maxQueuePlaceCount; i++)
             {
-                for(int k = minQueuePlaceCount; k <= maxQueuePlaceCount; k++)
+                //Меняем параметр "КМО".
+                parameters.QueueCapacity = i;
+
+                var diagram = GraphicsFactory.CreateEmptyDiagram(parameters.ChannelCount, parameters.QueueCapacity);
+
+                try
                 {
-                    parameters.QueueCapacity = k;
-                    var diagram = CallbackUi.CreateNewDiagram(parameters.channelCount, parameters.QueueCapacity);
-
                     Solver.FillDiagram(parameters, diagram);
-                    Solver.AddPointsToGraph(graphs, maxQueuePlaceCount, k, diagram);
+                }
+                catch (Exception ex)
+                {
+                    CallbackUi.ShowError("Ошибка вычислений", "При моделировании процесса возникло исключение:\n" + ex.Message);
+                    return;
+                }
 
-                    var analyzeText = Solver.GetDiagramAnalyzeText(diagram);
-                    File.WriteAllText(textFolder + "/Отчет для кол-ва мест " + k + ".txt", analyzeText);
+                Solver.AddPointsToGraph(diagram, graphs, maxQueuePlaceCount, i);
+
+                try
+                {
+                    File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + i + ".txt", Solver.GetDiagramAnalyzeText(diagram));
+                }
+                catch
+                {
+                    noReportRights = true;
                 }
             }
-            catch(Exception ex)
-            {
-                CallbackUi.ShowError("Ошибка вычислений", ex.Message);
-                return;
-            }
+
+            bool noGraphRights = false;
 
             for (int i = 0; i < totalGraphCount; i++)
             {
@@ -193,8 +244,22 @@ namespace QTS.Core
 
                 var bitmap = graphs[i].ExportToBitmap();
 
-                bitmap.Save(folder + "/" + graphNames[i] + ".png");
+                try
+                {
+                    bitmap.Save(graphsFolder + "/" + graphNames[i] + ".png");
+                }
+                catch
+                {
+                    noGraphRights = true;
+                }
             }
+
+            if (noGraphRights)
+                CallbackUi.ShowWarning("", "Не удалось сохранить некоторые изображения графиков.\nВозможно, не достаточно прав для записи в выбранную папку.");
+
+            if (noReportRights)
+                CallbackUi.ShowWarning("", "Не удалось создать файлы отчетов.\nВозможно, не достаточно прав для записи в выбранную папку.");
+
         }
         #endregion
     }

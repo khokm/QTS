@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="OxyPlotDiagram.cs" />
+    <Compile Include="OxyPlotFactory.cs" />
     <Compile Include="OxyPlotGraph.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -3,19 +3,20 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using OxyPlot;
 using QTS.Core;
+using QTS.OxyPlotGraphics;
 
 namespace QTS.WinForms
 {
     public partial class MainForm : Form
     {
-        QtsController controller;
+        QtsController<OxyPlotDiagram> controller;
         bool rndValueChanged = false;
 
         public MainForm()
         {
             InitializeComponent();
 
-            controller = new QtsController(this);
+            controller = new QtsController<OxyPlotDiagram>(this, new OxyPlotFactory());
 
             /*
              * OxyPlot по умолчанию уже использует
@@ -29,11 +30,12 @@ namespace QTS.WinForms
             keyBinder.UnbindKeyDown(OxyKey.Right);
 
             plot1.Controller = keyBinder;
-
             //tests
             //
-            //var pars = new ParametersContainer(10, 5, new[] { 5, 3, 4 }, 0, true, 10, false, -1, false);
+            // var pars = new ParametersContainer(10, 2, 0, false, -5, true, 1, false, new[] { 5, 3, 100 });
+            //var pars = new ParametersContainer(10, 2, 0, true, 10, false, 2, false, new int[] { });
             //controller.MakeDiagram(pars);
+            //controller.MakeSynthesis(pars, 1, 0);
         }
 
         /// <summary>
@@ -44,34 +46,18 @@ namespace QTS.WinForms
         {
             int threadIntencity = (int)threadIntencity_Numeric.Value;
             int queuePlaceCount = (int)parkPlace_Numeric.Value;
-
             double minRndValue = (double)minRnd_Numeric.Value;
-
-            double maxTime = (double)timeLimit_Numeric.Value;
-            int maxClients = (int)clientLimit_Numeric.Value;
-
-            bool clientsLimit = clientLimit_CheckBox.Checked;
             bool timeLimit = timeLimit_CheckBox.Checked;
-
-            if (!timeLimit && !clientsLimit)
-            {
-                MessageBox.Show("Введите хотя бы одно ограничение.", "Ошибка вычислений", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return null;
-            }
-
+            double maxTime = (double)timeLimit_Numeric.Value;
+            bool clientsLimit = clientLimit_CheckBox.Checked;
+            int maxClients = (int)clientLimit_Numeric.Value;
             bool preferFirstChannel = preferFirstChannel_CheckBox.Checked;
 
             List<int> channels = new List<int>();
             foreach (var item in channelIntencites.Items)
                 channels.Add(int.Parse(item.ToString().Substring(3)));
 
-            if (channels.Count == 0)
-            {
-                MessageBox.Show("Система не имеет мест обслуживания.", "Ошибка вычислений", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return null;
-            }
-
-            return new ParametersContainer(threadIntencity, queuePlaceCount, channels.ToArray(), minRndValue, timeLimit, maxTime, clientsLimit, maxClients, preferFirstChannel);
+            return new ParametersContainer(threadIntencity, queuePlaceCount, minRndValue, timeLimit, maxTime, clientsLimit, maxClients, preferFirstChannel, channels.ToArray());
         }
 
         #region Обработчики кнопок правой панели
@@ -119,7 +105,6 @@ namespace QTS.WinForms
             if (valueForm.DialogResult == DialogResult.OK)
                 channelIntencites.Items[channelIntencites.SelectedIndex] = string.Format("{0}. {1}", index + 1, valueForm.Value);
         }
-
 
         private void timeLimit_CheckBox_CheckedChanged(object sender, EventArgs e)
         {
@@ -176,19 +161,14 @@ namespace QTS.WinForms
 
         private void построитьГрафикToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var parameters = ParseDiagramParameters();
-
-            if (parameters == null)
-                return;
-
-            controller.MakeDiagram(parameters);
+            controller.MakeDiagram(ParseDiagramParameters());
         }
 
         private void синтезСМОToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var parameters = ParseDiagramParameters();
 
-            if (parameters == null)
+            if (!controller.CheckParametersValid(parameters))
                 return;
 
             var form = new EnterServicePlaceCountForm();
@@ -203,6 +183,9 @@ namespace QTS.WinForms
         #region Обработчик нажатия клавиш стрелок
         private void plot1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
+            if (e.Control)
+                return;
+
             switch (e.KeyCode)
             {
                 case Keys.Up:

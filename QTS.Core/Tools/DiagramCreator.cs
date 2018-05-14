@@ -30,7 +30,7 @@ namespace QTS.Core.Tools
         /// <param name="diagram">Заполняемая диаграмма</param>
         public DiagramCreator(int queueCapacity, int[] channelsIntencity, bool preferFirstChannel, ITimeDiagram diagram)
         {
-            if (diagram.Completed)
+            if (diagram.Finished)
                 throw new Exception("DiagramCreator::Диаграмма уже построена!");
 
             this.preferFirstChannel = preferFirstChannel;

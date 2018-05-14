@@ -29,7 +29,7 @@ namespace QTS.Core
 
         double m_systemStartTime;
         double m_systemStopTime;
-        bool m_diagramCompleted;
+        bool m_diagramFinished;
 
         double m_serviceTime;
         int m_clientsServed;
@@ -261,15 +261,15 @@ namespace QTS.Core
 
         public void FinishDiagram()
         {
-            if (m_diagramCompleted)
+            if (m_diagramFinished)
                 throw new Exception("Диаграмма уже построена");
 
-            m_diagramCompleted = true;
+            m_diagramFinished = true;
             m_inverseChannelLines = CaluclateInverseChannelLines();
             OnDiagramFinished();
         }
 
-        public bool Completed => m_diagramCompleted;
+        public bool Finished => m_diagramFinished;
         #endregion
 
         #region IDiagramData

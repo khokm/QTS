@@ -52,6 +52,6 @@
         /// <summary>
         /// Завершено ли создание диаграммы?
         /// </summary>
-        bool Completed { get; }
+        bool Finished { get; }
     }
 }

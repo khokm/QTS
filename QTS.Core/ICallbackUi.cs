@@ -3,65 +3,59 @@
     /// <summary>
     /// Пользовательский интерфейс (например, CLI или GUI) для обратной связи.
     /// </summary>
-    public interface ICallbackUi
+    /// <typeparam name="T">Используемая реализация временной диаграммы.</typeparam>
+    public interface ICallbackUi<T> where T : TimeDiagram
     {
         /// <summary>
-        /// Перерисовывает диаграмму.
+        /// Перерисовывает диаграмму, отбражаемую в главном окне.
         /// </summary>
         void InvalidateDiagramView();
 
         /// <summary>
-        /// Устанавливает текущую отображаемую диаграмму.
+        /// Устанавливает диаграмму, которая должна быть отображена в главном окне.
         /// </summary>
         /// <param name="diagram">Отображаемая диаграмма</param>
-        void SetDiagramView(TimeDiagram diagram);
+        void SetDiagramView(T diagram);
 
         /// <summary>
-        /// Выключает отображение диаграммы.
+        /// Выключает отображение диаграммы в главном окне.
         /// </summary>
         void RemoveDiagramView();
 
         /// <summary>
-        /// Вызывает диалог "Да/Нет".
+        /// Запрашивает подтверждение/отрицание пользователя о каких-либо действиях программы.
         /// </summary>
-        /// <param name="title">Заголовок окна</param>
-        /// <param name="message">Содержимое окна</param>
+        /// <param name="title">Совершаемое действие.</param>
+        /// <param name="message">Описание совершаемого действия.</param>
         /// <returns>Ответ пользователя</returns>
         bool YesNoDialog(string title, string message);
 
         /// <summary>
-        /// Создает новый экземпляр диграммы.
+        /// Просит пользователя выбрать папку для сохранения данных.
         /// </summary>
-        /// <param name="channelCount"></param>
-        /// <param name="queueCapacity"></param>
-        /// <returns></returns>
-        TimeDiagram CreateNewDiagram(int channelCount, int queueCapacity);
+        /// <param name="description">Описание сохраняемого содержимого.</param>
+        /// <returns>Путь к выбранной папке.</returns>
+        string GetFolderPath(string description);
 
         /// <summary>
-        /// Создает новый экземпляр графика.
-        /// </summary>
-        /// <returns></returns>
-        IGraph CreateGraph();
-
-        /// <summary>
-        /// Возвращает путь к папке для сохранения графиков.
-        /// </summary>
-        /// <param name="description"></param>
-        /// <returns></returns>
-        string GetImagePathFolder(string description);
-
-        /// <summary>
-        /// Создает текстовое окно.
+        /// Показывает пользователю текстовое окно.
         /// </summary>
         /// <param name="title">Заголовок окна</param>
         /// <param name="text">Содержимое окна</param>
         void ShowTextWindow(string title, string text);
 
         /// <summary>
-        /// Уведомляет пользователя о недопустимых действиях.
+        /// Уведомляет пользователя о совершаемых недопустимых действиях.
         /// </summary>
         /// <param name="title">Заголовок окна</param>
         /// <param name="message">Содержимое окна</param>
         void ShowError(string title, string message);
+
+        /// <summary>
+        /// Показывает пользователю предупреждение.
+        /// </summary>
+        /// <param name="title">Заголовок окна</param>
+        /// <param name="message">Содержимое окна</param>
+        void ShowWarning(string title, string message);
     }
 }

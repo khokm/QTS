@@ -35,7 +35,7 @@
             this.анализToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.анализДиаграммыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.синтезСМОToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.panel2 = new System.Windows.Forms.Panel();
+            this.RightPanel = new System.Windows.Forms.Panel();
             this.preferFirstChannel_CheckBox = new System.Windows.Forms.CheckBox();
             this.clientLimit_CheckBox = new System.Windows.Forms.CheckBox();
             this.timeLimit_CheckBox = new System.Windows.Forms.CheckBox();
@@ -52,7 +52,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.channelIntencites = new System.Windows.Forms.ListBox();
             this.plot1 = new OxyPlot.WindowsForms.PlotView();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.PlotPanel = new System.Windows.Forms.Panel();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toStart_Button = new System.Windows.Forms.ToolStripButton();
             this.stepBack_Button = new System.Windows.Forms.ToolStripButton();
@@ -60,14 +60,14 @@
             this.toEnd_Button = new System.Windows.Forms.ToolStripButton();
             this.showPrevLines_CheckBox = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
-            this.panel2.SuspendLayout();
+            this.RightPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.clientLimit_Numeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.timeLimit_Numeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.minRnd_Numeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.threadIntencity_Numeric)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.parkPlace_Numeric)).BeginInit();
             this.groupBox1.SuspendLayout();
-            this.panel1.SuspendLayout();
+            this.PlotPanel.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -120,29 +120,29 @@
             this.синтезСМОToolStripMenuItem.Text = "Синтез СМО...";
             this.синтезСМОToolStripMenuItem.Click += new System.EventHandler(this.синтезСМОToolStripMenuItem_Click);
             // 
-            // panel2
+            // RightPanel
             // 
-            this.panel2.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.panel2.Controls.Add(this.preferFirstChannel_CheckBox);
-            this.panel2.Controls.Add(this.clientLimit_CheckBox);
-            this.panel2.Controls.Add(this.timeLimit_CheckBox);
-            this.panel2.Controls.Add(this.clientLimit_Numeric);
-            this.panel2.Controls.Add(this.timeLimit_Numeric);
-            this.panel2.Controls.Add(this.minRnd_Numeric);
-            this.panel2.Controls.Add(this.threadIntencity_Numeric);
-            this.panel2.Controls.Add(this.parkPlace_Numeric);
-            this.panel2.Controls.Add(this.label3);
-            this.panel2.Controls.Add(this.label2);
-            this.panel2.Controls.Add(this.label1);
-            this.panel2.Controls.Add(this.deleteChannelIntencity_Button);
-            this.panel2.Controls.Add(this.addChannelIntencity_Button);
-            this.panel2.Controls.Add(this.groupBox1);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.panel2.Location = new System.Drawing.Point(882, 24);
-            this.panel2.Name = "panel2";
-            this.panel2.Padding = new System.Windows.Forms.Padding(0, 300, 0, 60);
-            this.panel2.Size = new System.Drawing.Size(241, 606);
-            this.panel2.TabIndex = 2;
+            this.RightPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.RightPanel.Controls.Add(this.preferFirstChannel_CheckBox);
+            this.RightPanel.Controls.Add(this.clientLimit_CheckBox);
+            this.RightPanel.Controls.Add(this.timeLimit_CheckBox);
+            this.RightPanel.Controls.Add(this.clientLimit_Numeric);
+            this.RightPanel.Controls.Add(this.timeLimit_Numeric);
+            this.RightPanel.Controls.Add(this.minRnd_Numeric);
+            this.RightPanel.Controls.Add(this.threadIntencity_Numeric);
+            this.RightPanel.Controls.Add(this.parkPlace_Numeric);
+            this.RightPanel.Controls.Add(this.label3);
+            this.RightPanel.Controls.Add(this.label2);
+            this.RightPanel.Controls.Add(this.label1);
+            this.RightPanel.Controls.Add(this.deleteChannelIntencity_Button);
+            this.RightPanel.Controls.Add(this.addChannelIntencity_Button);
+            this.RightPanel.Controls.Add(this.groupBox1);
+            this.RightPanel.Dock = System.Windows.Forms.DockStyle.Right;
+            this.RightPanel.Location = new System.Drawing.Point(882, 24);
+            this.RightPanel.Name = "RightPanel";
+            this.RightPanel.Padding = new System.Windows.Forms.Padding(0, 300, 0, 60);
+            this.RightPanel.Size = new System.Drawing.Size(241, 606);
+            this.RightPanel.TabIndex = 2;
             // 
             // preferFirstChannel_CheckBox
             // 
@@ -338,10 +338,10 @@
             // plot1
             // 
             this.plot1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.plot1.Location = new System.Drawing.Point(0, 50);
+            this.plot1.Location = new System.Drawing.Point(0, 20);
             this.plot1.Name = "plot1";
-            this.plot1.PanCursor = System.Windows.Forms.Cursors.Hand;
-            this.plot1.Size = new System.Drawing.Size(888, 556);
+            this.plot1.PanCursor = System.Windows.Forms.Cursors.NoMove2D;
+            this.plot1.Size = new System.Drawing.Size(888, 586);
             this.plot1.TabIndex = 0;
             this.plot1.Text = "plot1";
             this.plot1.ZoomHorizontalCursor = System.Windows.Forms.Cursors.SizeWE;
@@ -349,15 +349,15 @@
             this.plot1.ZoomVerticalCursor = System.Windows.Forms.Cursors.SizeNS;
             this.plot1.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.plot1_PreviewKeyDown);
             // 
-            // panel1
+            // PlotPanel
             // 
-            this.panel1.Controls.Add(this.plot1);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 24);
-            this.panel1.Name = "panel1";
-            this.panel1.Padding = new System.Windows.Forms.Padding(0, 50, 235, 0);
-            this.panel1.Size = new System.Drawing.Size(1123, 606);
-            this.panel1.TabIndex = 1;
+            this.PlotPanel.Controls.Add(this.plot1);
+            this.PlotPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.PlotPanel.Location = new System.Drawing.Point(0, 24);
+            this.PlotPanel.Name = "PlotPanel";
+            this.PlotPanel.Padding = new System.Windows.Forms.Padding(0, 20, 235, 0);
+            this.PlotPanel.Size = new System.Drawing.Size(1123, 606);
+            this.PlotPanel.TabIndex = 1;
             // 
             // toolStrip1
             // 
@@ -433,8 +433,8 @@
             this.ClientSize = new System.Drawing.Size(1123, 630);
             this.Controls.Add(this.showPrevLines_CheckBox);
             this.Controls.Add(this.toolStrip1);
-            this.Controls.Add(this.panel2);
-            this.Controls.Add(this.panel1);
+            this.Controls.Add(this.RightPanel);
+            this.Controls.Add(this.PlotPanel);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(800, 500);
@@ -442,15 +442,15 @@
             this.Text = "Системы массового обслуживания";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
+            this.RightPanel.ResumeLayout(false);
+            this.RightPanel.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.clientLimit_Numeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.timeLimit_Numeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.minRnd_Numeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.threadIntencity_Numeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.parkPlace_Numeric)).EndInit();
             this.groupBox1.ResumeLayout(false);
-            this.panel1.ResumeLayout(false);
+            this.PlotPanel.ResumeLayout(false);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -461,7 +461,7 @@
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel RightPanel;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button addChannelIntencity_Button;
         private System.Windows.Forms.Button deleteChannelIntencity_Button;
@@ -472,7 +472,7 @@
         private System.Windows.Forms.ToolStripMenuItem графикToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem построитьГрафикToolStripMenuItem;
         private OxyPlot.WindowsForms.PlotView plot1;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel PlotPanel;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton toStart_Button;
         private System.Windows.Forms.ToolStripButton stepForward_Button;

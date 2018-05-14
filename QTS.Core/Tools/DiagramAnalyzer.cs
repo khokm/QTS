@@ -110,12 +110,13 @@ namespace QTS.Core.Tools
             {
                 float[] cip = new float[diagram.ChannelCount];
 
-                if (diagram.SystemWorkTime == 0)
+                //if (diagram.SystemWorkTime == 0) //Так прога крашилась, если каналов было 0...
+                if (diagram.SystemWorkTime == 0 || diagram.ChannelCount == 0) //поэтому пришлось добавить второе условие
                     return cip;
 
                 float totalProb = (float)(diagram.GetChannelsIntersectionLength(0) /diagram.SystemWorkTime);
 
-                cip[diagram.ChannelCount - 1] = totalProb;
+                cip[diagram.ChannelCount - 1] = totalProb; //Собственно, здесь и крашилась. Наверное, стоило бы переписать всю функцию.
 
                 for (int i = diagram.ChannelCount - 2; i >= 0 ; i--)
                 {

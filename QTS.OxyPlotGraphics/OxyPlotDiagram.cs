@@ -18,7 +18,7 @@ namespace QTS.OxyPlotGraphics
         {
             get
             {
-                if (!Completed)
+                if (!Finished)
                     throw new Exception("Диаграмма не завершена!");
 
                 return graph.PlotModel;
@@ -37,9 +37,9 @@ namespace QTS.OxyPlotGraphics
 
         protected override void OnPathStarted(double y, double x)
         {
-            graph.StartLine("Заявка " + (SummaryClientCount + 1));
+            graph.StartLine($"Заявка { SummaryClientCount + 1 }");
 
-            graph.CurrentLine.MouseDown += LineMouseDown;
+            graph.CurrentLine.MouseDown += OnMouseDown;
 
             AddAnnotation(y, x, VerticalAlignment.Bottom);
         }
@@ -52,41 +52,46 @@ namespace QTS.OxyPlotGraphics
 
         protected override void OnDiagramFinished()
         {
-            var categoryAxis = new CategoryAxis()
-            {
-                Position = AxisPosition.Left,
-
-                MajorGridlineStyle = LineStyle.Dot,
-                MinorGridlineStyle = LineStyle.Dot,
-
-                IsTickCentered = true,
-
-                MinimumRange = Math.Min(10, TopY * 2),
-                MaximumRange = TopY * 2,
-                AbsoluteMinimum = -5,
-                AbsoluteMaximum = TopY * 2,
-            };
-
-            categoryAxis.ActualLabels.Add("Отказ");
-            categoryAxis.ActualLabels.Add("Обслужено");
-
-            for (int i = 0; i < QueueCapacity; i++)
-                categoryAxis.ActualLabels.Add("Место " + (QueueCapacity - i));
-
-            for (int i = 0; i < ChannelCount; i++)
-                categoryAxis.ActualLabels.Add("Канал " + (ChannelCount - i));
-
-            categoryAxis.ActualLabels.Add("Заявки");
-
-            var xAxe = new LinearAxis()
+            var xAxis = new LinearAxis()
             {
                 Position = AxisPosition.Bottom,
                 MinimumRange = 0.001,
-                MaximumRange = 100000
+                MaximumRange = 100000,
+
+                //AbsoluteMinimum = 0
             };
 
-            graph.PlotModel.Axes.Add(categoryAxis);
-            graph.PlotModel.Axes.Add(xAxe);
+            var yAxis = new CategoryAxis()
+            {
+                Position = AxisPosition.Left,
+                MinimumRange = Math.Min(10, TopY * 2),
+                MaximumRange =  TopY * 2,
+
+                AbsoluteMinimum = -5,
+                AbsoluteMaximum = TopY * 2,
+
+                //Делаем горизонтальные линии пунктирными
+                MajorGridlineStyle = LineStyle.Dot,
+                MinorGridlineStyle = LineStyle.Dot,
+
+                //Делаем так, чтобы боковые подписи были напротив линий
+                IsTickCentered = true
+            };
+
+            //Расставляем боковые подписи
+            yAxis.ActualLabels.Add("Отказ");
+            yAxis.ActualLabels.Add("Обслужено");
+
+            for (int i = 0; i < QueueCapacity; i++)
+                yAxis.ActualLabels.Add($"Место { QueueCapacity - i }");
+
+            for (int i = 0; i < ChannelCount; i++)
+                yAxis.ActualLabels.Add($"Канал { ChannelCount - i }");
+
+            yAxis.ActualLabels.Add("Заявки");
+
+            graph.PlotModel.Axes.Insert(0, xAxis);
+            graph.PlotModel.Axes.Insert(1, yAxis);
         }
 
         protected override void UpdateView(int visibleLineIndex)
@@ -105,6 +110,12 @@ namespace QTS.OxyPlotGraphics
             }
         }
 
+        /// <summary>
+        /// Создает новую подпись над точкой.
+        /// </summary>
+        /// <param name="y"></param>
+        /// <param name="x"></param>
+        /// <param name="textAlligment">Положение надписи относительно точки</param>
         void AddAnnotation(double y, double x, VerticalAlignment textAlligment)
         {
             var pointAnnotation1 = new PointAnnotation()
@@ -115,12 +126,18 @@ namespace QTS.OxyPlotGraphics
                 TextVerticalAlignment = textAlligment
             };
 
-            pointAnnotation1.MouseDown += LineMouseDown;
+            pointAnnotation1.MouseDown += OnMouseDown;
 
             graph.PlotModel.Annotations.Add(pointAnnotation1);
         }
 
-        void LineMouseDown(object sender, OxyMouseDownEventArgs e)
+        /// <summary>
+        /// Вызывается при нажатии на точку или линию диграммы.
+        /// Используется для передвижения по диаграмме.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void OnMouseDown(object sender, OxyMouseDownEventArgs e)
         {
             if (e.IsControlDown)
             {

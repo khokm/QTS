@@ -18,7 +18,7 @@ namespace QTS.Core.Tools
             RandomGenerator rnd = new RandomGenerator(parameters.MinRandomValue);
             double workTime = 0;
 
-            DiagramCreator model = new DiagramCreator(parameters.QueueCapacity, parameters.ChannelsIntencity, parameters.PreferFirstChannel, timeDiagram);
+            DiagramCreator model = new DiagramCreator(parameters.QueueCapacity, parameters.ChannelsIntencites, parameters.PreferFirstChannel, timeDiagram);
 
             for (int i = 0; !parameters.HasClientLimit || i < parameters.ClientLimit; i++)
             {
@@ -36,11 +36,11 @@ namespace QTS.Core.Tools
         /// <summary>
         /// Создает новые точки на каждом из графиков показателей. Используется для синтеза СМО.
         /// </summary>
-        /// <param name="graphs">Массив графиков показателей</param>
-        /// <param name="queueMaximumCapacity">Максимальное количество мест в очереди из всех анализируемых систем</param>
+        /// <param name="timeDiagram">Анализируемая диаграмма.</param>
+        /// <param name="graphs">Массив графиков показателей.</param>
+        /// <param name="queueMaximumCapacity">Максимальное количество мест в очереди из всех анализируемых систем.</param>
         /// <param name="currentX">Текущая координата графика по X, куда будет внесена точка.</param>
-        /// <param name="timeDiagram">Анализируемая диаграмма</param>
-        public static void AddPointsToGraph(IGraph[] graphs, int queueMaximumCapacity, double currentX, IDiagramData timeDiagram)
+        public static void AddPointsToGraph(IDiagramData timeDiagram, IGraph[] graphs, int queueMaximumCapacity, double currentX)
         {
             var info = new DiagramAnalyzer(timeDiagram);
 
