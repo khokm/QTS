@@ -60,7 +60,7 @@
             this.ClientSize = new System.Drawing.Size(494, 270);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "AboutControlsForm";
             this.Text = "Помощь по управлению";
             this.ResumeLayout(false);
