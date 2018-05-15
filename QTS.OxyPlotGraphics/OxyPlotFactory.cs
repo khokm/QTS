@@ -5,9 +5,9 @@ namespace QTS.OxyPlotGraphics
     /// <summary>
     /// Простая реализация фабрики графических элементов.
     /// </summary>
-    public class OxyPlotFactory : IGraphicsFactory<OxyPlotDiagram>
+    public class OxyPlotFactory : IGraphicsFactory<OxyPlotDiagram, OxyPlotGraph>
     {
-        public IGraph CreateEmptyGraph()
+        public OxyPlotGraph CreateEmptyGraph()
         {
             return new OxyPlotGraph();
         }

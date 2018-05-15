@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace QTS.Core
+﻿namespace QTS.Core
 {
-
     /// <summary>
     /// Фабрика графических объектов.
     /// </summary>
     /// <typeparam name="T">Используемая реализация временной диаграммы.</typeparam>
-    public interface IGraphicsFactory<T> where T : TimeDiagram
+    /// <typeparam name="G">Используемая реализация графика.</typeparam>
+    public interface IGraphicsFactory<out T, out G> where T : TimeDiagram where G : IGraph
     {
         /// <summary>
         /// Создает новый экземпляр пустой диграммы.
@@ -24,6 +19,6 @@ namespace QTS.Core
         /// Создает новый экземпляр пустого графика.
         /// </summary>
         /// <returns></returns>
-        IGraph CreateEmptyGraph();
+        G CreateEmptyGraph();
     }
 }

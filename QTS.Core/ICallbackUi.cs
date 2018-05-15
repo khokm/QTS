@@ -4,7 +4,7 @@
     /// Пользовательский интерфейс (например, CLI или GUI) для обратной связи.
     /// </summary>
     /// <typeparam name="T">Используемая реализация временной диаграммы.</typeparam>
-    public interface ICallbackUi<T> where T : TimeDiagram
+    public interface ICallbackUi
     {
         /// <summary>
         /// Перерисовывает диаграмму, отбражаемую в главном окне.
@@ -15,7 +15,7 @@
         /// Устанавливает диаграмму, которая должна быть отображена в главном окне.
         /// </summary>
         /// <param name="diagram">Отображаемая диаграмма</param>
-        void SetDiagramView(T diagram);
+        void SetDiagramView(TimeDiagram diagram);
 
         /// <summary>
         /// Выключает отображение диаграммы в главном окне.

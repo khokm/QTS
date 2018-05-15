@@ -9,14 +9,14 @@ namespace QTS.WinForms
 {
     public partial class MainForm : Form
     {
-        QtsController<OxyPlotDiagram> controller;
+        QtsController controller;
         bool rndValueChanged = false;
 
         public MainForm()
         {
             InitializeComponent();
 
-            controller = new QtsController<OxyPlotDiagram>(this, new OxyPlotFactory());
+            controller = new QtsController(this, new OxyPlotFactory());
 
             /*
              * OxyPlot по умолчанию уже использует

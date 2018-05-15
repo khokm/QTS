@@ -9,13 +9,13 @@ namespace QTS.WinForms
      * Реализация главной формы как пользовательского интерфейса для обратной связи
      */
 
-    partial class MainForm : ICallbackUi<OxyPlotDiagram>
+    partial class MainForm : ICallbackUi
     {
         public void InvalidateDiagramView() => plot1.InvalidatePlot(false);
 
-        public void SetDiagramView(OxyPlotDiagram diagram)
+        public void SetDiagramView(TimeDiagram diagram)
         {
-            plot1.Model = diagram.plotModel;
+            plot1.Model = (diagram as OxyPlotDiagram)?.plotModel;
         }
 
         public void RemoveDiagramView()
