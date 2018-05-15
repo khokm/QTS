@@ -35,6 +35,7 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="QueuePlaceGradientData.cs" />
     <Compile Include="Diagram\IDiagramData.cs" />
     <Compile Include="Diagram\ITimeDiagram.cs" />
     <Compile Include="Graphics\IDiagramViewController.cs" />

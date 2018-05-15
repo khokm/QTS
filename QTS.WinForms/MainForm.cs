@@ -30,12 +30,6 @@ namespace QTS.WinForms
             keyBinder.UnbindKeyDown(OxyKey.Right);
 
             plot1.Controller = keyBinder;
-            //tests
-            //
-            // var pars = new ParametersContainer(10, 2, 0, false, -5, true, 1, false, new[] { 5, 3, 100 });
-            //var pars = new ParametersContainer(10, 2, 0, true, 10, false, 2, false, new int[] { });
-            //controller.MakeDiagram(pars);
-            //controller.MakeSynthesis(pars, 1, 0);
         }
 
         /// <summary>
@@ -127,62 +121,25 @@ namespace QTS.WinForms
         #endregion
 
         #region Обработчики кнопок верхней панели (управление отображением диаграммы)
-        private void toStart_Button_Click(object sender, EventArgs e)
-        {
-            controller.GoToDiagramStart();
-        }
+        private void toStart_Button_Click(object sender, EventArgs e) => controller.GoToDiagramStart();
 
-        private void stepBack_Button_Click(object sender, EventArgs e)
-        {
-            controller.GoToDiagramPrev();
-        }
+        private void stepBack_Button_Click(object sender, EventArgs e) => controller.GoToDiagramPrev();
 
-        private void stepForward_Button_Click(object sender, EventArgs e)
-        {
-            controller.GoToDiagramNext();
-        }
+        private void stepForward_Button_Click(object sender, EventArgs e) => controller.GoToDiagramNext();
 
-        private void toEnd_Button_Click(object sender, EventArgs e)
-        {
-            controller.GoToDiagramEnd();
-        }
+        private void toEnd_Button_Click(object sender, EventArgs e) => controller.GoToDiagramEnd();
 
-        private void showPrevLines_CheckBox_CheckedChanged(object sender, EventArgs e)
-        {
-            controller.ShowPreviousLines(showPrevLines_CheckBox.Checked);
-        }
+        private void showPrevLines_CheckBox_CheckedChanged(object sender, EventArgs e) => controller.ShowPreviousLines(showPrevLines_CheckBox.Checked);
         #endregion
 
         #region Обработчики кнопок меню
-        private void анализДиаграммыToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            controller.MakeDiagramAnalyze();
-        }
+        private void анализДиаграммыToolStripMenuItem_Click(object sender, EventArgs e) => controller.MakeDiagramAnalyze();
 
-        private void построитьГрафикToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            controller.MakeDiagram(ParseDiagramParameters());
-        }
+        private void построитьГрафикToolStripMenuItem_Click(object sender, EventArgs e) => controller.MakeDiagram();
 
-        private void синтезСМОToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var parameters = ParseDiagramParameters();
+        private void синтезСМОToolStripMenuItem_Click(object sender, EventArgs e) => controller.MakeSynthesis();
 
-            if (!controller.CheckParametersValid(parameters))
-                return;
-
-            var form = new EnterServicePlaceCountForm();
-
-            if (form.ShowDialog() != DialogResult.OK)
-                return;
-
-            controller.MakeSynthesis(parameters, form.MinumumQueuePlaces, form.MaximumQueuePlaces);
-        }
-
-        private void управлениеToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            new AboutControlsForm().ShowDialog();
-        }
+        private void управлениеToolStripMenuItem_Click(object sender, EventArgs e) => new AboutControlsForm().ShowDialog();
         #endregion
 
         #region Обработчик нажатия клавиш стрелок

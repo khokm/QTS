@@ -222,8 +222,11 @@ namespace QTS.Core
         /// </summary>
         /// <param name="parameters">Параметры для построения диаграммы, которые нужно проверить на правильность.</param>
         /// <returns></returns>
-        public bool CheckParametersValid(ParametersContainer parameters)
+        bool CheckParametersValid(ParametersContainer parameters)
         {
+            if(parameters == null)
+                return false;
+
             if (!parameters.HasTimeLimit && !parameters.HasClientLimit)
             {
                 CallbackUi.ShowError("Построить временную диаграмму", "Система не имеет ограничений ни по времени, ни по заявкам.");
@@ -236,6 +239,25 @@ namespace QTS.Core
             if (parameters.ChannelCount < 0 || parameters.QueueCapacity < 0)
             {
                 CallbackUi.ShowError("Эта ошибка никогда не вылезет", "Надо было юзать unit");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Проверяет корректность введенных параметров.
+        /// </summary>
+        /// <param name="gradient">Параметры для синтеза СМО.</param>
+        /// <returns></returns>
+        bool CheckParametersValid(QueuePlaceGradientData gradient)
+        {
+            if (gradient == null)
+                return false;
+
+            if (gradient.MaxPlaceCount <= gradient.MinPlaceCount || gradient.MinPlaceCount < 0 || gradient.MaxPlaceCount < 0)
+            {
+                CallbackUi.ShowError("Синтез СМО", "Некорректные значения градиента КМО.");
                 return false;
             }
 
@@ -289,8 +311,10 @@ namespace QTS.Core
         /// Вызывает создание диаграммы по заданным значениям. Результатом является отображение диграммы на главной панели.
         /// </summary>
         /// <param name="parameters">Параметры диграммы, заданные пользователем</param>
-        public void MakeDiagram(ParametersContainer parameters)
+        public void MakeDiagram()
         {
+            ParametersContainer parameters = CallbackUi.GetDiagramParameters();
+
             if (!CheckParametersValid(parameters))
                 return;
 
@@ -347,23 +371,20 @@ namespace QTS.Core
         /// <param name="parameters">Параметры, задаваемые пользователем.</param>
         /// <param name="minQueuePlaceCount">Минимальное количество мест в очереди</param>
         /// <param name="maxQueuePlaceCount">Максимальное количество мест в очереди</param>
-        public void MakeSynthesis(ParametersContainer parameters, int minQueuePlaceCount, int maxQueuePlaceCount)
+        public void MakeSynthesis()
         {
-            if (!CheckParametersValid(parameters))
+            ParametersContainer parameters;
+            QueuePlaceGradientData gradient;
+            string graphsFolder;
+            string reportsFolder;
+
+            if (!CheckParametersValid(parameters = CallbackUi.GetDiagramParameters()) || 
+                !CheckParametersValid(gradient = CallbackUi.GetQueuePlaceGradientData()) ||
+                (graphsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения графиков")) == "" || 
+                (reportsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения отчетов", graphsFolder)) == "")
                 return;
 
-            if (maxQueuePlaceCount <= minQueuePlaceCount || minQueuePlaceCount < 0 || maxQueuePlaceCount < 0)
-            {
-                CallbackUi.ShowError("Синтез СМО", "Некорректные значения градиента КМО");
-                return;
-            }
-
-            string graphsFolder, reportsFolder;
-
-            if ((graphsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения графиков")) == "" || (reportsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения отчетов", graphsFolder)) == "")
-                return;
-
-            var graphNames = GenerateGraphNames(parameters.ChannelCount, maxQueuePlaceCount);
+            var graphNames = GenerateGraphNames(parameters.ChannelCount, gradient.MaxPlaceCount);
 
             int totalGraphCount = graphNames.Length;
 
@@ -381,21 +402,20 @@ namespace QTS.Core
 
             bool noReportRights = false;
 
-            for (int i = minQueuePlaceCount; i <= maxQueuePlaceCount; i++)
+            for (int i = gradient.MinPlaceCount; i <= gradient.MaxPlaceCount; i++)
             {
                 //Меняем параметр "КМО".
                 parameters.QueueCapacity = i;
 
                 try
                 {
-                    AddPointsToGraph(parameters, graphs, maxQueuePlaceCount, i);
+                    AddPointsToGraph(parameters, graphs, gradient.MaxPlaceCount, i);
                 }
                 catch (Exception ex)
                 {
                     CallbackUi.ShowError("Ошибка вычислений", "При моделировании процесса возникло исключение:\n" + ex.Message);
                     return;
                 }
-
 
                 try
                 {

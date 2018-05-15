@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using QTS.Core;
 
 namespace QTS.WinForms
 {
@@ -13,8 +14,7 @@ namespace QTS.WinForms
             InitializeComponent();
         }
 
-        public int MinumumQueuePlaces { get; private set; }
-        public int MaximumQueuePlaces { get; private set; }
+        public QueuePlaceGradientData gradientData { get; private set; }
 
         private void ApplyButton_Click(object sender, EventArgs e)
         {
@@ -23,12 +23,11 @@ namespace QTS.WinForms
 
             if (max <= min || min < 0 || max < 0)
             {
-                MessageBox.Show("Некорректные значения градиента КМО", "Синтез СМО", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Некорректные значения градиента КМО.", "Синтез СМО", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            MinumumQueuePlaces = min;
-            MaximumQueuePlaces = max;
+            gradientData = new QueuePlaceGradientData(min, max);
             DialogResult = DialogResult.OK;
             Close();
         }

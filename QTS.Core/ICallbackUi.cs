@@ -23,6 +23,18 @@
         void RemoveDiagramView();
 
         /// <summary>
+        /// Получает параметры для построения диаграммы.
+        /// </summary>
+        /// <returns></returns>
+        ParametersContainer GetDiagramParameters();
+
+        /// <summary>
+        /// Получает параметры градиента для синтеза СМО.
+        /// </summary>
+        /// <returns></returns>
+        QueuePlaceGradientData GetQueuePlaceGradientData();
+
+        /// <summary>
         /// Запрашивает подтверждение/отрицание пользователя о каких-либо действиях программы.
         /// </summary>
         /// <param name="title">Совершаемое действие.</param>

@@ -2,6 +2,7 @@
 using QTS.Core;
 using QTS.OxyPlotGraphics;
 using System.Diagnostics;
+using System;
 
 namespace QTS.WinForms
 {
@@ -12,6 +13,8 @@ namespace QTS.WinForms
     partial class MainForm : ICallbackUi
     {
         public void InvalidateDiagramView() => plot1.InvalidatePlot(false);
+
+        public ParametersContainer GetDiagramParameters() => ParseDiagramParameters();
 
         public void SetDiagramView(TimeDiagram diagram)
         {
@@ -60,6 +63,16 @@ namespace QTS.WinForms
         public void ShowWarning(string title, string message)
         {
             MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        public QueuePlaceGradientData GetQueuePlaceGradientData()
+        {
+            var form = new EnterServicePlaceCountForm();
+
+            if (form.ShowDialog() != DialogResult.OK)
+                return null;
+
+            return form.gradientData;
         }
     }
 }
