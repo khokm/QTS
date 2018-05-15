@@ -15,34 +15,25 @@
         /// Добавляет линию заявки, находящейся на обслуживании
         /// </summary>
         /// <param name="channelIndex">Номер места обслуживания</param>
-        /// <param name="start">Время начала обслуживания</param>
-        /// <param name="end">Время окончания обслуживания</param>
-        void PushChannelLine(int channelIndex, double start, double end);
-
-        /// <summary>
-        /// Увеличивает количество заявок, попавших в очередь, на 1
-        /// </summary>
-        void IncrementQueueClientCount();
+        /// <param name="serviceTime">Время обслуживания.</param>
+        void PushChannelLine(int channelIndex, double serviceTime);
 
         /// <summary>
         /// Добавляет линию заявки, находящейся на указанном стояночном месте
         /// </summary>
         /// <param name="queuePlaceIndex">Номер стояночного места</param>
-        /// <param name="start">Время начала нахождения на стояночном месте</param>
-        /// <param name="end">Время окончания нахождения на стояночном месте</param>
-        void PushQueueLine(int queuePlaceIndex, double start, double end);
+        /// <param name="queueTime">Время нахождения на стояночном месте.</param>
+        void PushQueueLine(int queuePlaceIndex, double queueTime);
 
         /// <summary>
         /// Добавляет точку на линии "Обслужено" и заканчивает линию заявки.
         /// </summary>
-        /// <param name="departureTime">Время отъезда заявки</param>
-        void PushServedPoint(double departureTime);
+        void PushServedPoint();
 
         /// <summary>
         /// Добавляет точку на линии "Отказ" и заканчивает линию заявки.
         /// </summary>
-        /// <param name="departureTime">Время отъезда</param>
-        void PushRefusedPoint(double departureTime);
+        void PushRefusedPoint();
 
         /// <summary>
         /// Заканчивает создание диаграммы и вызывает ее постообработку (добавление надписей и т.д.)
