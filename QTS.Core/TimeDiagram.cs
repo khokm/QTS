@@ -27,18 +27,22 @@ namespace QTS.Core
             }
         }
 
-        double m_systemStartTime;
-        double m_systemStopTime;
-        bool m_diagramFinished;
+        protected int ChannelCount { get; }
+        protected int QueueCapacity { get; }
+        protected int SummaryClientCount { get; private set; }
+
+        protected double FirstClientArrivalTime { get; private set; }
+        protected double LastClientDepartureTime { get; private set; }
+
+        protected bool Finished { get; private set; }
+        protected bool ShowPreviousLines { get; private set; }
+
+        protected int TopY => 2 + ChannelCount + QueueCapacity;
 
         double m_serviceTime;
         int m_clientsServed;
         int m_clientsLost;
         int m_queueClientCount;
-        int m_clientsCount;
-
-        int m_channelCount;
-        int m_queueCapacity;
 
         List<Line>[] m_queueLines;
         double[] m_queueBusyTime;
@@ -55,9 +59,7 @@ namespace QTS.Core
 
         int currentVisibleIndex;
 
-        bool m_showPreviousLines;
-
-        protected int TopY => 2 + ChannelCount + QueueCapacity;
+        event Action onViewUpdated;
 
         /// <summary>
         /// Создает пустую диаграмму.
@@ -66,8 +68,8 @@ namespace QTS.Core
         /// <param name="queueCapacity">Количество мест обслуживания</param>
         protected TimeDiagram(int channelCount, int queueCapacity)
         {
-            m_channelCount = channelCount;
-            m_queueCapacity = queueCapacity;
+            ChannelCount = channelCount;
+            QueueCapacity = queueCapacity;
 
             m_channelLines = new List<Line>[channelCount];
             for (int i = 0; i < channelCount; i++)
@@ -79,7 +81,7 @@ namespace QTS.Core
 
             m_queueBusyTime = new double[queueCapacity];
             
-            m_showPreviousLines = true;
+            ShowPreviousLines = true;
         }
 
         /// <summary>
@@ -123,7 +125,7 @@ namespace QTS.Core
             currentVisibleIndex = lineIndex;
             UpdateView(currentVisibleIndex);
 
-            OnViewUpdated?.Invoke();
+            onViewUpdated?.Invoke();
         }
 
         /// <summary>
@@ -134,10 +136,10 @@ namespace QTS.Core
         void FinishPath(double y, double x)
         {
             if (LastClientDepartureTime < x)
-                m_systemStopTime = x;
+                LastClientDepartureTime = x;
 
             OnPathFinished(y, x);
-            m_clientsCount++;
+            SummaryClientCount++;
         }
 
         /// <summary>
@@ -201,10 +203,10 @@ namespace QTS.Core
         }
 
         #region ITimeDiagram
-        public void PushStartPoint(double arrivalTime)
+        void ITimeDiagram.PushStartPoint(double arrivalTime)
         {
             if (SummaryClientCount == 0)
-                m_systemStartTime = arrivalTime;
+                FirstClientArrivalTime = arrivalTime;
 
             int y = TopY;
 
@@ -212,7 +214,7 @@ namespace QTS.Core
             AddVisualPoint(y, arrivalTime);
         }
 
-        public void PushChannelLine(int channelIndex, double start, double end)
+        void ITimeDiagram.PushChannelLine(int channelIndex, double start, double end)
         {
             m_channelLines[channelIndex].Add(new Line(start, end));
 
@@ -223,12 +225,12 @@ namespace QTS.Core
             AddVisualPoint(y, end);
         }
 
-        public void IncrementQueueClientCount()
+        void ITimeDiagram.IncrementQueueClientCount()
         {
             m_queueClientCount++;
         }
 
-        public void PushQueueLine(int queuePlaceIndex, double start, double end)
+        void ITimeDiagram.PushQueueLine(int queuePlaceIndex, double start, double end)
         {
             m_queueLines[queuePlaceIndex].Add(new Line(start, end));
 
@@ -243,7 +245,7 @@ namespace QTS.Core
             AddVisualPoint(y, end);
         }
 
-        public void PushServedPoint(double departureTime)
+        void ITimeDiagram.PushServedPoint(double departureTime)
         {
             m_clientsServed++;
             int y = 1;
@@ -251,7 +253,7 @@ namespace QTS.Core
             FinishPath(y, departureTime);
         }
 
-        public void PushRefusedPoint(double departureTime)
+        void ITimeDiagram.PushRefusedPoint(double departureTime)
         {
             m_clientsLost++;
             int y = 0;
@@ -259,43 +261,43 @@ namespace QTS.Core
             FinishPath(y, departureTime);
         }
 
-        public void FinishDiagram()
+        void ITimeDiagram.FinishDiagram()
         {
-            if (m_diagramFinished)
+            if (Finished)
                 throw new Exception("Диаграмма уже построена");
 
-            m_diagramFinished = true;
+            Finished = true;
             m_inverseChannelLines = CaluclateInverseChannelLines();
             OnDiagramFinished();
         }
 
-        public bool Finished => m_diagramFinished;
+        bool ITimeDiagram.Finished => Finished;
         #endregion
 
         #region IDiagramData
-        public int ChannelCount => m_channelCount;
+        int IDiagramData.ChannelCount => ChannelCount;
 
-        public int QueueCapacity => m_queueCapacity;
+        int IDiagramData.QueueCapacity => QueueCapacity;
 
-        public int SummaryClientCount => m_clientsCount;
+        int IDiagramData.SummaryClientCount => SummaryClientCount;
 
-        public int ServedClientCount => m_clientsServed;
+        int IDiagramData.ServedClientCount => m_clientsServed;
 
-        public int LostClientCount => m_clientsLost;
+        int IDiagramData.LostClientCount => m_clientsLost;
 
-        public double FirstClientArrivalTime => m_systemStartTime;
+        double IDiagramData.FirstClientArrivalTime => FirstClientArrivalTime;
 
-        public double LastClientDepartureTime => m_systemStopTime;
+        double IDiagramData.LastClientDepartureTime => LastClientDepartureTime;
 
-        public double SystemWorkTime => LastClientDepartureTime - FirstClientArrivalTime;
+        double IDiagramData.SystemWorkTime => LastClientDepartureTime - FirstClientArrivalTime;
 
-        public double[] QueueBusyTimes => m_queueBusyTime;
+        double[] IDiagramData.QueueBusyTimes => m_queueBusyTime;
 
-        public double SummaryServiceTime => m_serviceTime;
+        double IDiagramData.SummaryServiceTime => m_serviceTime;
 
-        public int QueuedClientCount => m_queueClientCount;
+        int IDiagramData.QueuedClientCount => m_queueClientCount;
 
-        public double GetChannelsIntersectionLength(int count)
+        double IDiagramData.GetChannelsIntersectionLength(int count)
         {
             double intersectionLength = 0;
 
@@ -321,7 +323,7 @@ namespace QTS.Core
             return intersectionLength;
         }
 
-        public int GetClientCountAtTime(double point, double step)
+        int IDiagramData.GetClientCountAtTime(double point, double step)
         {
             int count = 0;
 
@@ -353,30 +355,30 @@ namespace QTS.Core
         #endregion
 
         #region IDiagramViewController
-        public bool ShowPreviousLines
+        bool IDiagramViewController.ShowPreviousLines
         {
             get
             {
-                return m_showPreviousLines;
+                return ShowPreviousLines;
             }
             set
             {
-                m_showPreviousLines = value;
+                ShowPreviousLines = value;
                 SetVisibleLinesCount(currentVisibleIndex);
             }
         }
 
-        public void GoToStart()
+        void IDiagramViewController.GoToStart()
         {
             SetVisibleLinesCount(0);
         }
 
-        public void GoToEnd()
+        void IDiagramViewController.GoToEnd()
         {
             SetVisibleLinesCount(SummaryClientCount - 1);
         }
 
-        public void StepForward()
+        void IDiagramViewController.StepForward()
         {
             if (currentVisibleIndex == SummaryClientCount - 1)
                 return;
@@ -384,7 +386,7 @@ namespace QTS.Core
             SetVisibleLinesCount(currentVisibleIndex + 1);
         }
 
-        public void StepBack()
+        void IDiagramViewController.StepBack()
         {
             if (currentVisibleIndex == 0)
                 return;
@@ -392,7 +394,18 @@ namespace QTS.Core
             SetVisibleLinesCount(currentVisibleIndex - 1);
         }
 
-        public event Action OnViewUpdated;
+        event Action IDiagramViewController.OnViewUpdated
+        {
+            add
+            {
+                onViewUpdated += value;
+            }
+
+            remove
+            {
+                onViewUpdated -= value;
+            }
+        }
         #endregion
     }
 }
