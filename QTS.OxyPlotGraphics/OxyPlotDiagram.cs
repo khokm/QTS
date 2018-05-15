@@ -37,15 +37,23 @@ namespace QTS.OxyPlotGraphics
 
         protected override void OnPathStarted(double y, double x)
         {
-            graph.StartLine($"Заявка { SummaryClientCount + 1 }");
-
-            graph.CurrentLine.MouseDown += OnMouseDown;
+            graph.BeginLine();
 
             AddAnnotation(y, x, VerticalAlignment.Bottom);
         }
 
         protected override void OnPathFinished(double y, double x)
         {
+            int clientNum = SummaryClientCount + 1;
+
+            string data = $@"
+Заявка { clientNum }.
+";
+
+            graph.CurrentLine.Title = clientNum.ToString();
+            graph.CurrentLine.TrackerFormatString = data;
+            graph.CurrentLine.MouseDown += OnMouseDown;
+
             AddAnnotation(y, x, VerticalAlignment.Top);
             graph.CompleteLine();
         }
@@ -143,7 +151,7 @@ namespace QTS.OxyPlotGraphics
             {
                 if (sender is LineSeries)
                 {
-                    int lineIndex = int.Parse(((LineSeries)sender).Title.Remove(0, 7)) - 1;
+                    int lineIndex = int.Parse(((LineSeries)sender).Title) - 1;
 
                     SetVisibleLinesCount(lineIndex);
                 }

@@ -136,8 +136,8 @@ namespace QTS.Core
             if (LastClientDepartureTime < x)
                 m_systemStopTime = x;
 
-            m_clientsCount++;
             OnPathFinished(y, x);
+            m_clientsCount++;
         }
 
         /// <summary>

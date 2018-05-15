@@ -200,7 +200,7 @@ namespace QTS.Core
                 var oxyGraph = GraphicsFactory.CreateEmptyGraph();
 
                 oxyGraph.Title = graphNames[i];
-                oxyGraph.StartLine("");
+                oxyGraph.BeginLine();
 
                 graphs[i] = oxyGraph;
             }

@@ -43,13 +43,12 @@ namespace QTS.OxyPlotGraphics
             CurrentLine.Points.Add(new DataPoint(x, y));
         }
 
-        public void StartLine(string name)
+        public void BeginLine()
         {
             CurrentLine = new LineSeries()
             {
-                Title = name
+                LineStyle = LineStyle.Solid
             };
-            CurrentLine.LineStyle = LineStyle.Solid;
         }
 
         public void CompleteLine()

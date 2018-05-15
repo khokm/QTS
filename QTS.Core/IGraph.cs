@@ -15,8 +15,7 @@ namespace QTS.Core
         /// <summary>
         /// Начинает создание новой линии
         /// </summary>
-        /// <param name="name">Название линии</param>
-        void StartLine(string name);
+        void BeginLine();
 
         /// <summary>
         /// Заканчивает создание линии
