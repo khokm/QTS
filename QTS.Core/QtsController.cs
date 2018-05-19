@@ -3,7 +3,6 @@ using System.IO;
 using QTS.Core.Diagram;
 using QTS.Core.Graphics;
 using QTS.Core.Tools;
-using QTS.Core.Helpers;
 
 namespace QTS.Core
 {
@@ -12,7 +11,6 @@ namespace QTS.Core
     /// Действия пользователя нужно перенаправлять в этот класс,
     /// а обратная связь осуществляется через IUserInterface.
     /// </summary>
-    /// <typeparam name="T">Используемая реализация временной диаграммы.</typeparam>
     public class QtsController
     {
         IDiagramViewController diagramViewController = null;
