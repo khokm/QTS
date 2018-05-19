@@ -103,7 +103,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "EnterServicePlaceCountForm";
-            this.Text = "Количество мест обслуживания";
+            this.Text = "Количество мест в очереди";
             ((System.ComponentModel.ISupportInitialize)(this.FromNumeric)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.ToNumeric)).EndInit();
             this.ResumeLayout(false);
