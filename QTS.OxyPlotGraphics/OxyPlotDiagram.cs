@@ -36,7 +36,7 @@ namespace QTS.OxyPlotGraphics
         {
             graph.BeginLine();
 
-            graph.CurrentLine.TrackerFormatString = $"t (время, прошедшее с приезда предыдущей заявки): { (float)rndValue } (реал. знач. ГСЧ: { (float)realRndValue });\n";
+            graph.CurrentLine.TrackerFormatString = $"t (время, прошедшее с появления предыдущей заявки): { (float)rndValue } (реал. знач. ГСЧ: { (float)realRndValue });\n";
 
             AddAnnotation(y, x, VerticalAlignment.Bottom);
         }

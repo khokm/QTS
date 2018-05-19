@@ -125,7 +125,7 @@ namespace QTS.Core
             text += "Результаты работы системы:\r\n";
 
             text += " 1. Количество заявок: " + diagramData.SummaryClientCount + " шт\r\n";
-            text += " 2. Время работы: " + diagramData.SystemWorkTime + " часов\r\n\r\n";
+            text += " 2. Время работы (разница между временем появления первой и отъездом последней заявки): " + diagramData.SystemWorkTime + " часов\r\n\r\n";
 
             var info = new DiagramAnalyzer(diagramData);
 
