@@ -7,14 +7,14 @@ namespace QTS.OxyPlotGraphics
     /// </summary>
     public class OxyPlotFactory : IGraphicsFactory<OxyPlotDiagram, OxyPlotGraph>
     {
-        public OxyPlotGraph CreateEmptyGraph()
+        public OxyPlotGraph CreateEmptyGraph(string XAxis = "", string YAxis = "")
         {
-            return new OxyPlotGraph();
+            return new OxyPlotGraph(XAxis, YAxis);
         }
 
-        public OxyPlotDiagram CreateEmptyDiagram(int channelCount, int queueCapacity)
+        public OxyPlotDiagram CreateEmptyDiagram(ParametersContainer parameters)
         {
-            return new OxyPlotDiagram(channelCount, queueCapacity);
+            return new OxyPlotDiagram(parameters);
         }
     }
 }

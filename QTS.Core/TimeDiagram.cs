@@ -64,6 +64,7 @@ namespace QTS.Core
         readonly Line[][] inverseChannelLines;
 
         int currentVisibleIndex;
+        readonly ParametersContainer readonlyParameters;
 
         event Action viewUpdated;
 
@@ -72,22 +73,23 @@ namespace QTS.Core
         /// </summary>
         /// <param name="channelCount">Количество каналов</param>
         /// <param name="queueCapacity">Количество мест обслуживания</param>
-        protected TimeDiagram(int channelCount, int queueCapacity)
+        protected TimeDiagram(ParametersContainer parameters)
         {
-            ChannelCount = channelCount;
-            QueueCapacity = queueCapacity;
+            readonlyParameters = parameters;
+            ChannelCount = parameters.ChannelCount;
+            QueueCapacity = parameters.QueueCapacity;
 
-            channelLines = new List<Line>[channelCount];
-            for (int i = 0; i < channelCount; i++)
+            channelLines = new List<Line>[ChannelCount];
+            for (int i = 0; i < ChannelCount; i++)
                 channelLines[i] = new List<Line>();
 
             inverseChannelLines = new Line[ChannelCount][];
 
-            queueLines = new List<Line>[queueCapacity];
-            for (int i = 0; i < queueCapacity; i++)
+            queueLines = new List<Line>[QueueCapacity];
+            for (int i = 0; i < QueueCapacity; i++)
                 queueLines[i] = new List<Line>();
 
-            QueueBusyTimes = new double[queueCapacity];
+            QueueBusyTimes = new double[QueueCapacity];
 
             ShowPreviousLines = true;
         }
@@ -289,6 +291,9 @@ namespace QTS.Core
         #endregion
 
         #region IDiagramData
+
+        ParametersContainer IDiagramData.ReadonlyParameters => readonlyParameters;
+
         int IDiagramData.ChannelCount => ChannelCount;
 
         int IDiagramData.QueueCapacity => QueueCapacity;

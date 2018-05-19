@@ -8,6 +8,11 @@
     interface IDiagramData
     {
         /// <summary>
+        /// Параметры диаграммы.
+        /// </summary>
+        ParametersContainer ReadonlyParameters { get; }
+
+        /// <summary>
         /// Количество каналов (стояночных мест)
         /// </summary>
         int ChannelCount { get; }

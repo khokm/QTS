@@ -3,6 +3,7 @@ using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.WindowsForms;
 using QTS.Core;
+using OxyPlot.Axes;
 
 namespace QTS.OxyPlotGraphics
 {
@@ -30,12 +31,47 @@ namespace QTS.OxyPlotGraphics
             }
         }
 
-        public OxyPlotGraph()
+        public OxyPlotGraph(string XAxis = "", string YAxis = "")
         {
             PlotModel = new PlotModel()
             {
-                IsLegendVisible = false
+                IsLegendVisible = false,
             };
+
+            if (XAxis != "")
+            {
+                var xAxis = new LinearAxis()
+                {
+                    Position = AxisPosition.Bottom,
+                    AbsoluteMinimum = 0,
+                    Minimum = 0,
+                    MinimumRange = 1,
+                    MinimumMinorStep = 1,
+                    MinimumMajorStep = 1,
+                    MajorGridlineStyle = LineStyle.Solid,
+                    //MaximumRange = 1,
+                    Title = XAxis
+                };
+
+                PlotModel.Axes.Insert(0, xAxis);
+            }
+
+            if (YAxis != "")
+            {
+                var yAxis = new LinearAxis()
+                {
+                    Position = AxisPosition.Left,
+                    AbsoluteMinimum = 0,
+                    Minimum = 0,
+                    MinimumRange = 1,
+                    MajorGridlineStyle = LineStyle.Solid,
+                    MinorGridlineStyle = LineStyle.Dash,
+                    //Title = YAxis
+                };
+
+                PlotModel.Axes.Insert(1, yAxis);
+            }
+
         }
 
         public void AddPoint(double y, double x)

@@ -145,7 +145,7 @@ namespace QTS.Core
 
             RemoveCurrentDiagram();
 
-            var timeDiagram = GraphicsFactory.CreateEmptyDiagram(parameters.ChannelCount, parameters.QueueCapacity);
+            var timeDiagram = GraphicsFactory.CreateEmptyDiagram(parameters);
 
             try
             {
@@ -217,7 +217,7 @@ namespace QTS.Core
 
             for (int i = 0; i < totalGraphCount; i++)
             {
-                var oxyGraph = GraphicsFactory.CreateEmptyGraph();
+                var oxyGraph = GraphicsFactory.CreateEmptyGraph("Кол-во мест в очереди", graphNames[i]);
 
                 oxyGraph.Title = graphNames[i];
                 oxyGraph.BeginLine();
@@ -232,7 +232,7 @@ namespace QTS.Core
                 //Меняем параметр "КМО".
                 parameters.QueueCapacity = i;
 
-                var timeDiagram = GraphicsFactory.CreateEmptyDiagram(parameters.ChannelCount, parameters.QueueCapacity);
+                var timeDiagram = GraphicsFactory.CreateEmptyDiagram(parameters);
 
                 try
                 {

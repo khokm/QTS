@@ -13,12 +13,12 @@
         /// <param name="channelCount">Количество каналов. Используется для вычисления количества горизонтальных линий диаграммы.</param>
         /// <param name="channelCount">Количество мест обслуживания. Используется для вычисления количества горизонтальных линий диаграммы.</param>
         /// <returns></returns>
-        T CreateEmptyDiagram(int channelCount, int queueCapacity);
+        T CreateEmptyDiagram(ParametersContainer parameters);
 
         /// <summary>
         /// Создает новый экземпляр пустого графика.
         /// </summary>
         /// <returns></returns>
-        G CreateEmptyGraph();
+        G CreateEmptyGraph(string XAxis = "", string YAxis = "");
     }
 }

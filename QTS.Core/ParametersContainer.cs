@@ -44,5 +44,31 @@
             PreferFirstChannel = preferFirstChannel;
             ChannelsIntencites = channelsIntencies;
         }
+
+        public override string ToString()
+        {
+            string text = "Параметры системы:\r\n";
+
+            text += $" Интенсивность потока: {ThreadIntencity} шт/ч\r\n";
+
+            text += $" Количество стояночных мест: {QueueCapacity}\r\n";
+
+            if (MinRandomValue != 0)
+                text += $" Минимальное значение ГСЧ: {MinRandomValue}\r\n";
+
+            if (HasTimeLimit)
+                text += $" Ограничение по времени: {TimeLimit} ч\r\n";
+
+            if (HasClientLimit)
+                text += $" Ограничение по количеству заявок: {ClientLimit} шт\r\n";
+
+            if (!PreferFirstChannel)
+                text += " Не предпочитать первый канал\r\n";
+
+            for (int i = 0; i < ChannelsIntencites.Length; i++)
+                text += string.Format(" Интенсивность {0} канала: {1} шт/ч\r\n", i + 1, ChannelsIntencites[i]);
+
+            return text;
+        }
     }
 }

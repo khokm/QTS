@@ -88,15 +88,21 @@ namespace QTS.Core.Tools
         /// <returns></returns>
         public static string GetDiagramAnalyzeText(IDiagramData diagramData)
         {
+            string text = diagramData.ReadonlyParameters.ToString() + "\r\n";
+
+            text += "Показатели системы:\r\n";
+
             if (diagramData.SystemWorkTime == 0)
-                return "В процессе работы системы не поступило ни одной заявки! Анализ невозможен.";
-
-            string text = "";
-
-            text += "Результаты работы системы:\r\n";
+            {
+                text += "В процессе работы системы не поступило ни одной заявки! Анализ невозможен.";
+                return text;
+            }
 
             text += " 1. Количество заявок: " + diagramData.SummaryClientCount + " шт\r\n";
-            text += " 2. Время работы (разница между временем появления первой и отъездом последней заявки): " + diagramData.SystemWorkTime + " часов\r\n\r\n";
+            text += "   1.1 Из них обслужено: " + diagramData.ServedClientCount + " шт\r\n";
+            text += "   1.2 Из них утеряно: " + diagramData.LostClientCount + " шт\r\n";
+
+            text += " 2. Время работы (разница между временем появления первой и отъездом последней заявки): " + (float)diagramData.SystemWorkTime + " часов\r\n\r\n";
 
             var info = new DiagramAnalyzer(diagramData);
 

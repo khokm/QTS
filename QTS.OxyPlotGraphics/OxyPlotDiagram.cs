@@ -16,7 +16,7 @@ namespace QTS.OxyPlotGraphics
 
         public PlotModel plotModel => graph.PlotModel;
 
-        public OxyPlotDiagram(int channelCount, int queueCapacity) : base(channelCount, queueCapacity)
+        public OxyPlotDiagram(ParametersContainer parameters) : base(parameters)
         {
             graph = new OxyPlotGraph();
         }
