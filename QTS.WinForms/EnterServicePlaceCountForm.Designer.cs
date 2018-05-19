@@ -99,7 +99,9 @@
             this.Controls.Add(this.ToNumeric);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.FromNumeric);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
+            this.MinimizeBox = false;
             this.Name = "EnterServicePlaceCountForm";
             this.Text = "Количество мест обслуживания";
             ((System.ComponentModel.ISupportInitialize)(this.FromNumeric)).EndInit();
