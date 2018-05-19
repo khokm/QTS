@@ -26,9 +26,17 @@ namespace QTS.OxyPlotGraphics
             graph.AddPoint(y, x);
         }
 
-        protected override void OnPathStarted(double y, double x)
+
+        protected override void AddChannelRndMetadata(double realRndValue, double rndValue)
+        {
+            graph.CurrentLine.TrackerFormatString += $"t (время обслуживания): { (float)rndValue } (реал. знач. ГСЧ: { (float)realRndValue });";
+        }
+
+        protected override void OnPathStarted(double y, double x, double realRndValue, double rndValue)
         {
             graph.BeginLine();
+
+            graph.CurrentLine.TrackerFormatString = $"t (время, прошедшее с приезда предыдущей заявки): { (float)rndValue } (реал. знач. ГСЧ: { (float)realRndValue });\n";
 
             AddAnnotation(y, x, VerticalAlignment.Bottom);
         }
@@ -37,12 +45,8 @@ namespace QTS.OxyPlotGraphics
         {
             int clientNum = SummaryClientCount + 1;
 
-            string data = $@"
-Заявка { clientNum }.
-";
-
             graph.CurrentLine.Title = clientNum.ToString();
-            graph.CurrentLine.TrackerFormatString = data;
+            graph.CurrentLine.TrackerFormatString = $"Заявка { clientNum }.\n{ graph.CurrentLine.TrackerFormatString }";
             graph.CurrentLine.MouseDown += OnMouseDown;
 
             AddAnnotation(y, x, VerticalAlignment.Top);

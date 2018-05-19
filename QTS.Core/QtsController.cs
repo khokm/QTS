@@ -47,12 +47,14 @@ namespace QTS.Core
 
             for (int i = 0; !parameters.HasClientLimit || i < parameters.ClientLimit; i++)
             {
-                workTime += rnd.Next(parameters.ThreadIntencity);
+                double realRndValue;
+                double rndValue = rnd.Next(parameters.ThreadIntencity, out realRndValue);
+                workTime += rndValue;
 
                 if (parameters.HasTimeLimit && workTime > parameters.TimeLimit)
                     break;
 
-                model.PushClient(workTime, rnd);
+                model.PushClient(workTime, rnd, realRndValue, rndValue);
             }
 
             timeDiagram.FinishDiagram();

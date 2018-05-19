@@ -101,13 +101,14 @@ namespace QTS.Core.Tools
         /// <param name="rnd">Используемый ГСЧ</param>
         void CreateChannelLine(int channelIndex, double arrivalTime, RandomGenerator rnd)
         {
-            double clientSerivceTime = rnd.Next(channelsIntencity[channelIndex]);
+            double realRndValue;
+            double clientSerivceTime = rnd.Next(channelsIntencity[channelIndex], out realRndValue);
 
             double departureTime = arrivalTime + clientSerivceTime;
 
             channelIdleTimes[channelIndex] = departureTime;
 
-            timeDiagram.PushChannelLine(channelIndex, clientSerivceTime);
+            timeDiagram.PushChannelLine(channelIndex, clientSerivceTime, realRndValue);
             timeDiagram.PushServedPoint();
         }
 
@@ -116,9 +117,9 @@ namespace QTS.Core.Tools
         /// </summary>
         /// <param name="arrivalTime">Время прибытия заявки</param>
         /// <param name="rnd">Импользуемый ГСЧ</param>
-        public void PushClient(double arrivalTime, RandomGenerator rnd)
+        public void PushClient(double arrivalTime, RandomGenerator rnd, double realRndValue, double rndValue)
         {
-            timeDiagram.PushStartPoint(arrivalTime);
+            timeDiagram.PushStartPoint(arrivalTime, realRndValue, rndValue);
 
             int usingChannel = GetNextPossibleChannel(arrivalTime);
 

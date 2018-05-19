@@ -9,14 +9,17 @@
         /// Добавляет точку на линии "Заявки" и начинает путь заявки
         /// </summary>
         /// <param name="arrivalTime">Время появления заявки</param>
-        void PushStartPoint(double arrivalTime);
+        /// <param name="realRndValue">Значение гсч.</param>
+        /// <param name="rndValue">Промежуток между заявками.</param>
+        void PushStartPoint(double arrivalTime, double realRndValue, double rndValue);
 
         /// <summary>
         /// Добавляет линию заявки, находящейся на обслуживании
         /// </summary>
         /// <param name="channelIndex">Номер места обслуживания</param>
         /// <param name="serviceTime">Время обслуживания.</param>
-        void PushChannelLine(int channelIndex, double serviceTime);
+        /// <param name="realRndValue">Значение гсч.</param>
+        void PushChannelLine(int channelIndex, double serviceTime, double realRndValue);
 
         /// <summary>
         /// Добавляет линию заявки, находящейся на указанном стояночном месте

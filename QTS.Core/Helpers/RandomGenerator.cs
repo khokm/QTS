@@ -21,12 +21,14 @@ namespace QTS.Core.Helpers
         /// Возвращает -1/intencity*ln(rnd);
         /// </summary>
         /// <param name="intencity"></param>
+        /// <param name="realValue">Реальное значение гсч.</param>
         /// <returns></returns>
-        public double Next(int intencity)
+        public double Next(int intencity, out double realValue)
         {
             int stackMaximum = 0;
 
-            double value = 0;
+            double value;
+            double realVal;
             do
             {
                 if (stackMaximum > 1000)
@@ -34,11 +36,13 @@ namespace QTS.Core.Helpers
                         "Минмальный интервал: слишком большое значение."
                         );
 
-                value = -Math.Log(Rnd.NextDouble()) / intencity;
+                realVal = Rnd.NextDouble();
+                value = -Math.Log(realVal) / intencity;
                 stackMaximum++;
             }
             while (value < MinValue);
 
+            realValue = realVal;
             return value;
         }
     }

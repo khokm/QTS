@@ -99,12 +99,14 @@ namespace QTS.Core
         /// <param name="x"></param>
         protected abstract void AddPathPoint(double y, double x);
 
+        protected abstract void AddChannelRndMetadata(double realRndValue, double rndValue);
+
         /// <summary>
         /// Вызывается при создании нового пути заявки
         /// </summary>
         /// <param name="y"></param>
         /// <param name="x"></param>
-        protected abstract void OnPathStarted(double y, double x);
+        protected abstract void OnPathStarted(double y, double x, double realRndValue, double rndValue);
 
         /// <summary>
         /// Вызывается по окончании создания пути заявки
@@ -208,7 +210,7 @@ namespace QTS.Core
         }
 
         #region ITimeDiagram
-        void ITimeDiagram.PushStartPoint(double arrivalTime)
+        void ITimeDiagram.PushStartPoint(double arrivalTime, double realRndValue, double rndValue)
         {
             currentClientX = arrivalTime;
             currentClientIndex = SummaryClientCount;
@@ -218,11 +220,11 @@ namespace QTS.Core
 
             int y = TopY;
 
-            OnPathStarted(y, arrivalTime);
+            OnPathStarted(y, arrivalTime, realRndValue, rndValue);
             AddPathPoint(y, arrivalTime);
         }
 
-        void ITimeDiagram.PushChannelLine(int channelIndex, double serviceTime)
+        void ITimeDiagram.PushChannelLine(int channelIndex, double serviceTime, double realRndValue)
         {
             double departureTime = currentClientX + serviceTime;
             channelLines[channelIndex].Add(new Line(currentClientX, departureTime));
@@ -232,6 +234,7 @@ namespace QTS.Core
             int y = TopY - 1 - channelIndex;
             AddPathPoint(y, currentClientX);
             AddPathPoint(y, departureTime);
+            AddChannelRndMetadata(realRndValue, serviceTime);
             currentClientX = departureTime;
         }
 
