@@ -70,9 +70,6 @@ namespace QTS.OxyPlotGraphics
                 MinimumRange = Math.Min(10, TopY * 2),
                 MaximumRange =  TopY * 2,
 
-                AbsoluteMinimum = -5,
-                AbsoluteMaximum = TopY * 2,
-
                 //Делаем горизонтальные линии пунктирными
                 MajorGridlineStyle = LineStyle.Dot,
                 MinorGridlineStyle = LineStyle.Dot,
