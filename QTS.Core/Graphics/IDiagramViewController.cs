@@ -35,6 +35,6 @@ namespace QTS.Core.Graphics
         /// <summary>
         /// Вызывается при изменении отображения диаграммы
         /// </summary>
-        event Action OnViewUpdated;
+        event Action ViewUpdated;
     }
 }

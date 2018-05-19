@@ -107,8 +107,8 @@ namespace QTS.Core.Tools
 
             channelIdleTimes[channelIndex] = departureTime;
 
-            timeDiagram.PushChannelLine(channelIndex, arrivalTime, departureTime);
-            timeDiagram.PushServedPoint(departureTime);
+            timeDiagram.PushChannelLine(channelIndex, clientSerivceTime);
+            timeDiagram.PushServedPoint();
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace QTS.Core.Tools
 
             if (usingChannel == -1)
             {
-                timeDiagram.PushRefusedPoint(arrivalTime);
+                timeDiagram.PushRefusedPoint();
                 return;
             }
 
@@ -138,13 +138,11 @@ namespace QTS.Core.Tools
 
             if (queuePlaceIndex == -1)
             {
-                timeDiagram.PushRefusedPoint(arrivalTime);
+                timeDiagram.PushRefusedPoint();
                 return;
             }
 
             double queuedStart = arrivalTime;
-
-            timeDiagram.IncrementQueueClientCount();
 
             for (int i = queuePlaceIndex; i >= 0; i--)
             {
@@ -152,7 +150,7 @@ namespace QTS.Core.Tools
 
                 queueIdleTimes[i] = queuedEndTime;
 
-                timeDiagram.PushQueueLine(i, queuedStart, queuedEndTime);
+                timeDiagram.PushQueueLine(i, queuedEndTime - queuedStart);
                 queuedStart = queuedEndTime;
             }
 

@@ -343,7 +343,7 @@ namespace QTS.Core
             {
                 CallbackUi.SetDiagramView(timeDiagram);
                 diagramViewController = timeDiagram;
-                diagramViewController.OnViewUpdated += CallbackUi.InvalidateDiagramView;
+                diagramViewController.ViewUpdated += CallbackUi.InvalidateDiagramView;
                 diagramViewController.GoToEnd();
             }
         }

@@ -14,23 +14,14 @@ namespace QTS.OxyPlotGraphics
     {
         OxyPlotGraph graph;
 
-        public PlotModel plotModel
-        {
-            get
-            {
-                if (!Finished)
-                    throw new Exception("Диаграмма не завершена!");
-
-                return graph.PlotModel;
-            }
-        }
+        public PlotModel plotModel => graph.PlotModel;
 
         public OxyPlotDiagram(int channelCount, int queueCapacity) : base(channelCount, queueCapacity)
         {
             graph = new OxyPlotGraph();
         }
 
-        protected override void AddVisualPoint(double y, double x)
+        protected override void AddPathPoint(double y, double x)
         {
             graph.AddPoint(y, x);
         }
@@ -58,7 +49,7 @@ namespace QTS.OxyPlotGraphics
             graph.CompleteLine();
         }
 
-        protected override void OnDiagramFinished()
+        protected override void PostProcessDiagram()
         {
             var xAxis = new LinearAxis()
             {
