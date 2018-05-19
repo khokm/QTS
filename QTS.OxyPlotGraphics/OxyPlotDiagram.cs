@@ -29,14 +29,14 @@ namespace QTS.OxyPlotGraphics
 
         protected override void AddChannelRndMetadata(double realRndValue, double rndValue)
         {
-            graph.CurrentLine.TrackerFormatString += $"t (время обслуживания): { (float)rndValue } (реал. знач. ГСЧ: { (float)realRndValue });";
+            graph.CurrentLine.TrackerFormatString += $"t (время обслуживания): { (float)rndValue } (rnd: { (float)realRndValue });";
         }
 
         protected override void OnPathStarted(double y, double x, double realRndValue, double rndValue)
         {
             graph.BeginLine();
 
-            graph.CurrentLine.TrackerFormatString = $"t (время, прошедшее с появления предыдущей заявки): { (float)rndValue } (реал. знач. ГСЧ: { (float)realRndValue });\n";
+            graph.CurrentLine.TrackerFormatString = $"t (время, прошедшее с появления предыдущей заявки): { (float)rndValue } (rnd: { (float)realRndValue });\n";
 
             AddAnnotation(y, x, VerticalAlignment.Bottom);
         }
