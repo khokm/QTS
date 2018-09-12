@@ -8,9 +8,9 @@
         public int ThreadIntencity { get; set; }
         public int QueueCapacity { get; set; }
         public double MinRandomValue { get; set; }
-        public bool HasTimeLimit { get; }
+        public bool HasTimeLimit { get; set; }
         public double TimeLimit { get; set; }
-        public bool HasClientLimit { get; }
+        public bool HasClientLimit { get; set; }
         public int ClientLimit { get; set; }
         public bool PreferFirstChannel { get; set; }
         public int[] ChannelsIntencites { get; set; }
