@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using OxyPlot;
 using QTS.Core;
 using QTS.OxyPlotGraphics;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
 
 namespace QTS.WinForms
 {
@@ -52,6 +54,62 @@ namespace QTS.WinForms
                 channels.Add(int.Parse(item.ToString().Substring(3)));
 
             return new ParametersContainer(threadIntencity, queuePlaceCount, minRndValue, timeLimit, maxTime, clientsLimit, maxClients, preferFirstChannel, channels.ToArray());
+        }
+
+        private void SaveConfig()
+        {
+            try
+            {
+                var config = ParseDiagramParameters();
+
+                using (SaveFileDialog dialog = new SaveFileDialog() { FileName = "config.dat" })
+                {
+                    if (dialog.ShowDialog() != DialogResult.OK || string.IsNullOrWhiteSpace(dialog.FileName))
+                        return;
+                    BinaryFormatter binFormat = new BinaryFormatter();
+                    using (Stream fStream = new FileStream(dialog.FileName,
+                       FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        binFormat.Serialize(fStream, config);
+                    }
+                }
+            }
+            catch
+            {
+                ShowError("Ошибка", "Не удалось сохранить конфигурацию");
+            }
+        }
+
+        private void LoadConfig()
+        {
+            try
+            {
+                using (OpenFileDialog dialog = new OpenFileDialog() { FileName = "config.dat" })
+                {
+                    if (dialog.ShowDialog() != DialogResult.OK || string.IsNullOrWhiteSpace(dialog.FileName))
+                        return;
+
+                    BinaryFormatter binFormat = new BinaryFormatter();
+                    using (Stream fStream = new FileStream(dialog.FileName,
+                       FileMode.Open, FileAccess.Read, FileShare.None))
+                    {
+                        var config = (ParametersContainer)binFormat.Deserialize(fStream);
+
+                        threadIntencity_Numeric.Value = config.ThreadIntencity;
+                        parkPlace_Numeric.Value = config.QueueCapacity;
+                        minRnd_Numeric.Value = (decimal)config.MinRandomValue;
+                        timeLimit_CheckBox.Checked = config.HasTimeLimit;
+                        timeLimit_Numeric.Value = (decimal)config.TimeLimit;
+                        clientLimit_CheckBox.Checked = config.HasClientLimit;
+                        clientLimit_Numeric.Value = config.ClientLimit;
+                        preferFirstChannel_CheckBox.Checked = config.PreferFirstChannel;
+                    }
+                }
+            }
+            catch
+            {
+                ShowError("Ошибка", "Не удалось загрузить конфигурацию");
+            }
         }
 
         #region Обработчики кнопок правой панели
@@ -165,5 +223,9 @@ namespace QTS.WinForms
             }
         }
         #endregion
+
+        private void загрузитьКонфигурациюToolStripMenuItem_Click(object sender, EventArgs e) => LoadConfig();
+
+        private void сохранитьКонфигурациюКакToolStripMenuItem_Click(object sender, EventArgs e) => SaveConfig();
     }
 }

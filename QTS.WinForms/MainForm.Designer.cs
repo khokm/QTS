@@ -30,11 +30,16 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.загрузитьКонфигурациюToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.сохранитьКонфигурациюКакToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.графикToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.построитьГрафикToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.анализToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.анализДиаграммыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.синтезСМОToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.помощьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.управлениеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RightPanel = new System.Windows.Forms.Panel();
             this.preferFirstChannel_CheckBox = new System.Windows.Forms.CheckBox();
             this.clientLimit_CheckBox = new System.Windows.Forms.CheckBox();
@@ -59,8 +64,6 @@
             this.stepForward_Button = new System.Windows.Forms.ToolStripButton();
             this.toEnd_Button = new System.Windows.Forms.ToolStripButton();
             this.showPrevLines_CheckBox = new System.Windows.Forms.CheckBox();
-            this.помощьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.управлениеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.RightPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.clientLimit_Numeric)).BeginInit();
@@ -76,6 +79,7 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.файлToolStripMenuItem,
             this.графикToolStripMenuItem,
             this.анализToolStripMenuItem,
             this.помощьToolStripMenuItem});
@@ -84,6 +88,29 @@
             this.menuStrip1.Size = new System.Drawing.Size(1123, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
+            // 
+            // файлToolStripMenuItem
+            // 
+            this.файлToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.загрузитьКонфигурациюToolStripMenuItem,
+            this.сохранитьКонфигурациюКакToolStripMenuItem});
+            this.файлToolStripMenuItem.Name = "файлToolStripMenuItem";
+            this.файлToolStripMenuItem.Size = new System.Drawing.Size(45, 20);
+            this.файлToolStripMenuItem.Text = "Файл";
+            // 
+            // загрузитьКонфигурациюToolStripMenuItem
+            // 
+            this.загрузитьКонфигурациюToolStripMenuItem.Name = "загрузитьКонфигурациюToolStripMenuItem";
+            this.загрузитьКонфигурациюToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.загрузитьКонфигурациюToolStripMenuItem.Text = "Загрузить конфигурацию...";
+            this.загрузитьКонфигурациюToolStripMenuItem.Click += new System.EventHandler(this.загрузитьКонфигурациюToolStripMenuItem_Click);
+            // 
+            // сохранитьКонфигурациюКакToolStripMenuItem
+            // 
+            this.сохранитьКонфигурациюКакToolStripMenuItem.Name = "сохранитьКонфигурациюКакToolStripMenuItem";
+            this.сохранитьКонфигурациюКакToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.сохранитьКонфигурациюКакToolStripMenuItem.Text = "Сохранить конфигурацию в файл...";
+            this.сохранитьКонфигурациюКакToolStripMenuItem.Click += new System.EventHandler(this.сохранитьКонфигурациюКакToolStripMenuItem_Click);
             // 
             // графикToolStripMenuItem
             // 
@@ -122,6 +149,21 @@
             this.синтезСМОToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
             this.синтезСМОToolStripMenuItem.Text = "Синтез СМО...";
             this.синтезСМОToolStripMenuItem.Click += new System.EventHandler(this.синтезСМОToolStripMenuItem_Click);
+            // 
+            // помощьToolStripMenuItem
+            // 
+            this.помощьToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.управлениеToolStripMenuItem});
+            this.помощьToolStripMenuItem.Name = "помощьToolStripMenuItem";
+            this.помощьToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
+            this.помощьToolStripMenuItem.Text = "Помощь";
+            // 
+            // управлениеToolStripMenuItem
+            // 
+            this.управлениеToolStripMenuItem.Name = "управлениеToolStripMenuItem";
+            this.управлениеToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.управлениеToolStripMenuItem.Text = "Помощь по управлению";
+            this.управлениеToolStripMenuItem.Click += new System.EventHandler(this.управлениеToolStripMenuItem_Click);
             // 
             // RightPanel
             // 
@@ -429,21 +471,6 @@
             this.showPrevLines_CheckBox.UseVisualStyleBackColor = true;
             this.showPrevLines_CheckBox.CheckedChanged += new System.EventHandler(this.showPrevLines_CheckBox_CheckedChanged);
             // 
-            // помощьToolStripMenuItem
-            // 
-            this.помощьToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.управлениеToolStripMenuItem});
-            this.помощьToolStripMenuItem.Name = "помощьToolStripMenuItem";
-            this.помощьToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
-            this.помощьToolStripMenuItem.Text = "Помощь";
-            // 
-            // управлениеToolStripMenuItem
-            // 
-            this.управлениеToolStripMenuItem.Name = "управлениеToolStripMenuItem";
-            this.управлениеToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
-            this.управлениеToolStripMenuItem.Text = "Помощь по управлению";
-            this.управлениеToolStripMenuItem.Click += new System.EventHandler(this.управлениеToolStripMenuItem_Click);
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -510,5 +537,8 @@
         private System.Windows.Forms.CheckBox preferFirstChannel_CheckBox;
         private System.Windows.Forms.ToolStripMenuItem помощьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem управлениеToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem загрузитьКонфигурациюToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem сохранитьКонфигурациюКакToolStripMenuItem;
     }
 }
