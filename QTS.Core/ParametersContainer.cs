@@ -1,8 +1,11 @@
-﻿namespace QTS.Core
+﻿using System;
+
+namespace QTS.Core
 {
     /// <summary>
     /// Контейнер параметров для построения временной диграммы.
     /// </summary>
+    [Serializable]
     public class ParametersContainer
     {
         public int ThreadIntencity { get; set; }
