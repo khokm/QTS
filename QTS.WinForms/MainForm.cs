@@ -122,18 +122,20 @@ namespace QTS.WinForms
         bool showNotify = true;
         private void addChannelIntencity_Button_Click(object sender, EventArgs e)
         {
-            EnterValueForm valueForm = new EnterValueForm(1);
-            valueForm.ShowDialog();
-
-            if (valueForm.DialogResult == DialogResult.OK)
+            using (EnterValueForm valueForm = new EnterValueForm(1))
             {
-                channelIntencites.Items.Add(string.Format("{0}. {1}", channelIntencites.Items.Count + 1, valueForm.Value));
-                deleteChannelIntencity_Button.Enabled = true;
+                valueForm.ShowDialog();
 
-                if (showNotify)
+                if (valueForm.DialogResult == DialogResult.OK)
                 {
-                    ShowWarning("Подсказка", "Для редактирования интенсивности канала используйте двойной клик мышью.");
-                    showNotify = false;
+                    channelIntencites.Items.Add(string.Format("{0}. {1}", channelIntencites.Items.Count + 1, valueForm.Value));
+                    deleteChannelIntencity_Button.Enabled = true;
+
+                    if (showNotify)
+                    {
+                        ShowWarning("Подсказка", "Для редактирования интенсивности канала используйте двойной клик мышью.");
+                        showNotify = false;
+                    }
                 }
             }
         }
@@ -164,11 +166,13 @@ namespace QTS.WinForms
                 return;
 
             var tmpValue = channelIntencites.Items[channelIntencites.SelectedIndex].ToString();
-            EnterValueForm valueForm = new EnterValueForm(int.Parse(tmpValue.Substring(3)));
-            valueForm.ShowDialog();
+            using (EnterValueForm valueForm = new EnterValueForm(int.Parse(tmpValue.Substring(3))))
+            {
+                valueForm.ShowDialog();
 
-            if (valueForm.DialogResult == DialogResult.OK)
-                channelIntencites.Items[channelIntencites.SelectedIndex] = string.Format("{0}. {1}", index + 1, valueForm.Value);
+                if (valueForm.DialogResult == DialogResult.OK)
+                    channelIntencites.Items[channelIntencites.SelectedIndex] = string.Format("{0}. {1}", index + 1, valueForm.Value);
+            }
         }
 
         private void timeLimit_CheckBox_CheckedChanged(object sender, EventArgs e)
@@ -214,7 +218,11 @@ namespace QTS.WinForms
 
         private void синтезСМОToolStripMenuItem_Click(object sender, EventArgs e) => controller.MakeSynthesis();
 
-        private void управлениеToolStripMenuItem_Click(object sender, EventArgs e) => new AboutControlsForm().ShowDialog();
+        private void управлениеToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var about = new AboutControlsForm())
+                about.ShowDialog();
+        }
         #endregion
 
         #region Обработчик нажатия клавиш стрелок

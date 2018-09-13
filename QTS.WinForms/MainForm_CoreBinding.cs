@@ -67,12 +67,14 @@ namespace QTS.WinForms
 
         public QueuePlaceGradientData GetQueuePlaceGradientData()
         {
-            var form = new EnterServicePlaceCountForm();
+            using (var form = new EnterServicePlaceCountForm())
+            {
 
-            if (form.ShowDialog() != DialogResult.OK)
-                return null;
+                if (form.ShowDialog() != DialogResult.OK)
+                    return null;
 
-            return form.gradientData;
+                return form.gradientData;
+            }
         }
     }
 }

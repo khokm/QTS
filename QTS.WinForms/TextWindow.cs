@@ -17,14 +17,15 @@ namespace QTS.WinForms
 
         private void button1_Click(object sender, EventArgs e)
         {
-            SaveFileDialog save = new SaveFileDialog();
+            using (SaveFileDialog save = new SaveFileDialog())
+            {
+                save.Filter = "Text File | *.txt";
 
-            save.Filter = "Text File | *.txt";
+                if (save.ShowDialog() == DialogResult.OK)
+                    using (var writer = new StreamWriter(save.OpenFile()))
+                        writer.WriteLine(textBox1.Text);
 
-            if (save.ShowDialog() == DialogResult.OK)
-                using (var writer = new StreamWriter(save.OpenFile()))
-                    writer.WriteLine(textBox1.Text);
-
+            }
         }
     }
 }
