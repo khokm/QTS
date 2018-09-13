@@ -32,6 +32,11 @@ namespace QTS.Core
         /// <param name="clientLimit">Ограничение по количеству заявок</param>
         /// <param name="preferFirstChannel">Предпочитать первый канал?</param>
         /// <param name="channelsIntencies">Массив пропускных способностей каналов</param>
+        public ParametersContainer()
+        {
+
+        }
+
         public ParametersContainer(int threadIntencity, int queueCapacity,
             double minRandomValue, bool hasTimeLimit,
             double timeLimit, bool hasClientLimit,

@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using OxyPlot;
 using QTS.Core;
 using QTS.OxyPlotGraphics;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
+using System.Xml.Serialization;
 
 namespace QTS.WinForms
 {
@@ -62,20 +62,21 @@ namespace QTS.WinForms
             {
                 var config = ParseDiagramParameters();
 
-                using (SaveFileDialog dialog = new SaveFileDialog() { FileName = "config.dat" })
+                using (SaveFileDialog dialog = new SaveFileDialog() { FileName = "config.xml" })
                 {
                     if (dialog.ShowDialog() != DialogResult.OK || string.IsNullOrWhiteSpace(dialog.FileName))
                         return;
-                    BinaryFormatter binFormat = new BinaryFormatter();
+                    XmlSerializer formatter = new XmlSerializer(typeof(ParametersContainer));
                     using (Stream fStream = new FileStream(dialog.FileName,
                        FileMode.Create, FileAccess.Write, FileShare.None))
                     {
-                        binFormat.Serialize(fStream, config);
+                        formatter.Serialize(fStream, config);
                     }
                 }
             }
-            catch
+            catch(Exception ex)
             {
+                MessageBox.Show(ex.Message);
                 ShowError("Ошибка", "Не удалось сохранить конфигурацию");
             }
         }
@@ -84,16 +85,16 @@ namespace QTS.WinForms
         {
             try
             {
-                using (OpenFileDialog dialog = new OpenFileDialog() { FileName = "config.dat" })
+                using (OpenFileDialog dialog = new OpenFileDialog() { FileName = "config.xml" })
                 {
                     if (dialog.ShowDialog() != DialogResult.OK || string.IsNullOrWhiteSpace(dialog.FileName))
                         return;
 
-                    BinaryFormatter binFormat = new BinaryFormatter();
+                    XmlSerializer formatter = new XmlSerializer(typeof(ParametersContainer));
                     using (Stream fStream = new FileStream(dialog.FileName,
                        FileMode.Open, FileAccess.Read, FileShare.None))
                     {
-                        var config = (ParametersContainer)binFormat.Deserialize(fStream);
+                        var config = (ParametersContainer)formatter.Deserialize(fStream);
 
                         threadIntencity_Numeric.Value = config.ThreadIntencity;
                         parkPlace_Numeric.Value = config.QueueCapacity;
@@ -103,6 +104,11 @@ namespace QTS.WinForms
                         clientLimit_CheckBox.Checked = config.HasClientLimit;
                         clientLimit_Numeric.Value = config.ClientLimit;
                         preferFirstChannel_CheckBox.Checked = config.PreferFirstChannel;
+
+                        channelIntencites.Items.Clear();
+                        int counter = 1;
+                        foreach (var item in config.ChannelsIntencites)
+                            channelIntencites.Items.Add(string.Format("{0}. {1}", counter++, item));
                     }
                 }
             }
