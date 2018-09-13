@@ -31,6 +31,6 @@ namespace QTS.Core
         /// Конвертирует график в PNG-изображение
         /// </summary>
         /// <returns></returns>
-        Bitmap ExportToBitmap();
+        Bitmap ExportToBitmap(bool betterHieghts);
     }
 }

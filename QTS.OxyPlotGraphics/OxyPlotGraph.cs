@@ -5,6 +5,7 @@ using OxyPlot.WindowsForms;
 using QTS.Core;
 using OxyPlot.Axes;
 using System.Collections.Generic;
+using System;
 
 namespace QTS.OxyPlotGraphics
 {
@@ -111,8 +112,19 @@ namespace QTS.OxyPlotGraphics
             PlotModel.Series.Add(CurrentLine);
         }
 
-        public Bitmap ExportToBitmap()
+        public Bitmap ExportToBitmap(bool betterHeights)
         {
+            if(betterHeights)
+            {
+                int max = 1;
+                foreach (var line in PlotModel.Series)
+                    foreach (var point in ((LineSeries)line).Points)
+                        if (point.Y > max)
+                            max = (int)Math.Ceiling(point.Y);
+
+                PlotModel.Axes[1].MinimumRange = max;
+            }
+
             PngExporter exp = new PngExporter();
             return exp.ExportToBitmap(PlotModel);
         }
