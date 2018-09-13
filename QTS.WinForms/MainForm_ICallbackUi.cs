@@ -67,14 +67,35 @@ namespace QTS.WinForms
 
         public QueuePlaceGradientData GetQueuePlaceGradientData()
         {
-            using (var form = new EnterServicePlaceCountForm())
+            using (var form = new EnterServicePlaceCountForm() { StartPosition = FormStartPosition.CenterParent })
             {
-
-                if (form.ShowDialog() != DialogResult.OK)
+                if (form.ShowDialog(this) != DialogResult.OK)
                     return null;
 
                 return form.gradientData;
             }
+        }
+
+        public void ShowSynthesisStats(int current, int all)
+        {
+            statusText.Text = $"Моделирование процесса: {current} из {all}...";
+
+            if (!statusText.Visible)
+            {
+                statusText.Visible = true;
+                SuspendLayout();
+                Enabled = false;
+            }
+
+            statusText.Refresh();
+            Application.DoEvents();
+        }
+
+        public void CloseSynthesisStats()
+        {
+            statusText.Visible = false;
+            Enabled = true;
+            ResumeLayout();
         }
     }
 }

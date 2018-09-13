@@ -58,6 +58,7 @@
             this.channelIntencites = new System.Windows.Forms.ListBox();
             this.plot1 = new OxyPlot.WindowsForms.PlotView();
             this.PlotPanel = new System.Windows.Forms.Panel();
+            this.statusText = new System.Windows.Forms.Label();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toStart_Button = new System.Windows.Forms.ToolStripButton();
             this.stepBack_Button = new System.Windows.Forms.ToolStripButton();
@@ -391,6 +392,7 @@
             // 
             // PlotPanel
             // 
+            this.PlotPanel.Controls.Add(this.statusText);
             this.PlotPanel.Controls.Add(this.plot1);
             this.PlotPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.PlotPanel.Location = new System.Drawing.Point(0, 24);
@@ -398,6 +400,18 @@
             this.PlotPanel.Padding = new System.Windows.Forms.Padding(0, 20, 235, 0);
             this.PlotPanel.Size = new System.Drawing.Size(1123, 606);
             this.PlotPanel.TabIndex = 1;
+            // 
+            // statusText
+            // 
+            this.statusText.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.statusText.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.25F);
+            this.statusText.Location = new System.Drawing.Point(0, 20);
+            this.statusText.Name = "statusText";
+            this.statusText.Size = new System.Drawing.Size(888, 586);
+            this.statusText.TabIndex = 4;
+            this.statusText.Text = "statusText";
+            this.statusText.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.statusText.Visible = false;
             // 
             // toolStrip1
             // 
@@ -535,5 +549,6 @@
         private System.Windows.Forms.ToolStripMenuItem файлToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem загрузитьКонфигурациюToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem сохранитьКонфигурациюКакToolStripMenuItem;
+        private System.Windows.Forms.Label statusText;
     }
 }
