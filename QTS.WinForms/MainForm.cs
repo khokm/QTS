@@ -119,6 +119,7 @@ namespace QTS.WinForms
         }
 
         #region Обработчики кнопок правой панели
+        bool showNotify = true;
         private void addChannelIntencity_Button_Click(object sender, EventArgs e)
         {
             EnterValueForm valueForm = new EnterValueForm(1);
@@ -128,6 +129,12 @@ namespace QTS.WinForms
             {
                 channelIntencites.Items.Add(string.Format("{0}. {1}", channelIntencites.Items.Count + 1, valueForm.Value));
                 deleteChannelIntencity_Button.Enabled = true;
+
+                if (showNotify)
+                {
+                    ShowWarning("Подсказка", "Для редактирования интенсивности канала используйте двойной клик мышью.");
+                    showNotify = false;
+                }
             }
         }
 
