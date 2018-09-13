@@ -4,6 +4,7 @@ using OxyPlot.Series;
 using OxyPlot.WindowsForms;
 using QTS.Core;
 using OxyPlot.Axes;
+using System.Collections.Generic;
 
 namespace QTS.OxyPlotGraphics
 {
@@ -17,6 +18,22 @@ namespace QTS.OxyPlotGraphics
         /// </summary>
         public PlotModel PlotModel { get; }
         public LineSeries CurrentLine { get; private set; }
+
+        static int _currentColorIndex = 0;
+        static List<OxyColor> DefaultColors = new List<OxyColor>()
+        {
+                 OxyColor.FromRgb(0x4E, 0x9A, 0x06),
+                 OxyColor.FromRgb(0xC8, 0x8D, 0x00),
+                 OxyColor.FromRgb(0xCC, 0x00, 0x00),
+                 OxyColor.FromRgb(0x20, 0x4A, 0x87),
+                 OxyColors.Red,
+                 OxyColors.Orange,
+                 OxyColors.Yellow,
+                 OxyColors.Green,
+                 OxyColors.Blue,
+                 OxyColors.Indigo,
+                 OxyColors.Violet
+        };
 
         public string Title
         {
@@ -89,6 +106,7 @@ namespace QTS.OxyPlotGraphics
 
         public void CompleteLine()
         {
+            CurrentLine.Color = DefaultColors[_currentColorIndex++ % DefaultColors.Count];
             PlotModel.Series.Add(CurrentLine);
         }
 
