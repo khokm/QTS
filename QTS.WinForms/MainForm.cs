@@ -191,6 +191,10 @@ namespace QTS.WinForms
         #endregion
 
         #region Обработчики кнопок меню
+        private void загрузитьКонфигурациюToolStripMenuItem_Click(object sender, EventArgs e) => LoadConfig();
+
+        private void сохранитьКонфигурациюКакToolStripMenuItem_Click(object sender, EventArgs e) => SaveConfig();
+
         private void анализДиаграммыToolStripMenuItem_Click(object sender, EventArgs e) => controller.MakeDiagramAnalyze();
 
         private void построитьГрафикToolStripMenuItem_Click(object sender, EventArgs e) => controller.MakeDiagram();
@@ -223,9 +227,5 @@ namespace QTS.WinForms
             }
         }
         #endregion
-
-        private void загрузитьКонфигурациюToolStripMenuItem_Click(object sender, EventArgs e) => LoadConfig();
-
-        private void сохранитьКонфигурациюКакToolStripMenuItem_Click(object sender, EventArgs e) => SaveConfig();
     }
 }
