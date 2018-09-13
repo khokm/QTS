@@ -20,7 +20,7 @@ namespace QTS.Core
         /// <summary>
         /// Заканчивает создание линии
         /// </summary>
-        void CompleteLine();
+        void CompleteLine(bool randomColor = true);
 
         /// <summary>
         /// Добавляет точку в текущую линию

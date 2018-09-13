@@ -104,9 +104,10 @@ namespace QTS.OxyPlotGraphics
             };
         }
 
-        public void CompleteLine()
+        public void CompleteLine(bool randomColor = true)
         {
-            CurrentLine.Color = DefaultColors[_currentColorIndex++ % DefaultColors.Count];
+            if(randomColor)
+                CurrentLine.Color = DefaultColors[_currentColorIndex++ % DefaultColors.Count];
             PlotModel.Series.Add(CurrentLine);
         }
 
