@@ -49,7 +49,7 @@
     <Compile Include="QtsController.cs" />
     <Compile Include="TimeDiagram.cs" />
     <Compile Include="Tools\DiagramAnalyzer.cs" />
-    <Compile Include="Tools\DiagramCreator.cs" />
+    <Compile Include="Tools\ProcessModeller.cs" />
     <Compile Include="Tools\Solver.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

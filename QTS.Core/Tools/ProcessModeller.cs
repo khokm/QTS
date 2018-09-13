@@ -1,51 +1,39 @@
 ﻿using QTS.Core.Diagram;
 using QTS.Core.Helpers;
-using System;
 
 namespace QTS.Core.Tools
 {
     /// <summary>
-    /// Прокладывает пути заявок на диграмме.
+    /// Моделирует процесс СМО.
     /// </summary>
-    class DiagramCreator
+    class ProcessModeller
     {
-        int[] channelsIntencity { get; }
+        ParametersContainer Parameters { get; set; }
 
-        int channelCount => channelsIntencity.Length;
-        int queueCount => queueIdleTimes.Length;
+        double[] channelIdleTimes { get; set; }
+        double[] queueIdleTimes { get; set; }
 
-        double[] channelIdleTimes { get; }
-        double[] queueIdleTimes { get; }
-
-        ITimeDiagram timeDiagram { get; }
-
-        bool preferFirstChannel { get; }
-
-        /// <summary>
-        /// Создает новый заполнитель диаграммы.
-        /// </summary>
-        /// <param name="queueCapacity">Количество мест в очереди</param>
-        /// <param name="channelsIntencity">Массив пропускных способность каналов</param>
-        /// <param name="preferFirstChannel">Предпочитать первый канал?</param>
-        /// <param name="diagram">Заполняемая диаграмма</param>
-        public DiagramCreator(int queueCapacity, int[] channelsIntencity, bool preferFirstChannel, ITimeDiagram diagram)
+        public ProcessModeller()
         {
-            if (diagram.Finished)
-                throw new Exception("DiagramCreator::Диаграмма уже построена!");
 
-            this.preferFirstChannel = preferFirstChannel;
-            this.channelsIntencity = channelsIntencity;
+        }
 
-            channelIdleTimes = new double[channelCount];
-            queueIdleTimes = new double[queueCapacity];
+        public ProcessModeller(ParametersContainer parameters)
+        {
+            SetParameters(parameters);
+        }
 
-            for (int i = 0; i < channelCount; i++)
+        public void SetParameters(ParametersContainer parameters)
+        {
+            Parameters = parameters;
+            channelIdleTimes = new double[Parameters.ChannelCount];
+            queueIdleTimes = new double[parameters.QueueCapacity];
+
+            for (int i = 0; i < Parameters.ChannelCount; i++)
                 channelIdleTimes[i] = -1;
 
-            for (int i = 0; i < queueCapacity; i++)
+            for (int i = 0; i < Parameters.QueueCapacity; i++)
                 queueIdleTimes[i] = -1;
-
-            timeDiagram = diagram;
         }
 
         /// <summary>
@@ -55,7 +43,7 @@ namespace QTS.Core.Tools
         /// <returns>Индекс свободного стояночного места</returns>
         int GetQueuePlaceIndex(double arrivalTime)
         {
-            for (int i = 0; i < queueCount; i++)
+            for (int i = 0; i < Parameters.QueueCapacity; i++)
             {
                 if (queueIdleTimes[i] < arrivalTime)
                     return i;
@@ -71,16 +59,16 @@ namespace QTS.Core.Tools
         /// <returns>Индекс свободного места обслуживания</returns>
         int GetNextPossibleChannel(double arrivalTime)
         {
-            if (channelCount == 0)
+            if (Parameters.ChannelCount == 0)
                 return -1;
 
             int minIndex = 0;
 
             double minimumValue = channelIdleTimes[0];
 
-            for (int i = 0; i < channelCount; i++)
+            for (int i = 0; i < Parameters.ChannelCount; i++)
             {
-                if (preferFirstChannel && channelIdleTimes[i] < arrivalTime)
+                if (Parameters.PreferFirstChannel && channelIdleTimes[i] < arrivalTime)
                     return i;
 
                 if (channelIdleTimes[i] < minimumValue)
@@ -99,10 +87,10 @@ namespace QTS.Core.Tools
         /// <param name="channelIndex">Индекс используемого места обслуживания.</param>
         /// <param name="arrivalTime">Время начала обслуживания.</param>
         /// <param name="rnd">Используемый ГСЧ</param>
-        void CreateChannelLine(int channelIndex, double arrivalTime, RandomGenerator rnd)
+        void CreateChannelLine(int channelIndex, double arrivalTime, RandomGenerator rnd, ITimeDiagram timeDiagram)
         {
             double realRndValue;
-            double clientSerivceTime = rnd.Next(channelsIntencity[channelIndex], out realRndValue);
+            double clientSerivceTime = rnd.Next(Parameters.ChannelsIntencites[channelIndex], out realRndValue);
 
             double departureTime = arrivalTime + clientSerivceTime;
 
@@ -117,7 +105,7 @@ namespace QTS.Core.Tools
         /// </summary>
         /// <param name="arrivalTime">Время прибытия заявки</param>
         /// <param name="rnd">Импользуемый ГСЧ</param>
-        public void PushClient(double arrivalTime, RandomGenerator rnd, double realRndValue, double rndValue)
+        void PushClient(double arrivalTime, RandomGenerator rnd, double realRndValue, double rndValue, ITimeDiagram timeDiagram)
         {
             timeDiagram.PushStartPoint(arrivalTime, realRndValue, rndValue);
 
@@ -131,7 +119,7 @@ namespace QTS.Core.Tools
 
             if (channelIdleTimes[usingChannel] < arrivalTime)
             {
-                CreateChannelLine(usingChannel, arrivalTime, rnd);
+                CreateChannelLine(usingChannel, arrivalTime, rnd, timeDiagram);
                 return;
             }
 
@@ -155,7 +143,30 @@ namespace QTS.Core.Tools
                 queuedStart = queuedEndTime;
             }
 
-            CreateChannelLine(usingChannel, queueIdleTimes[0], rnd);
+            CreateChannelLine(usingChannel, queueIdleTimes[0], rnd, timeDiagram);
+        }
+
+        public T CreateDiagram<T>(IGraphicsFactory<T, IGraph> factory) where T : TimeDiagram, ITimeDiagram
+        {
+            RandomGenerator rnd = new RandomGenerator(Parameters.MinRandomValue);
+            double workTime = 0;
+
+            T timeDiagram = factory.CreateEmptyDiagram(Parameters);
+
+            for (int i = 0; !Parameters.HasClientLimit || i < Parameters.ClientLimit; i++)
+            {
+                double realRndValue;
+                double rndValue = rnd.Next(Parameters.ThreadIntencity, out realRndValue);
+                workTime += rndValue;
+
+                if (Parameters.HasTimeLimit && workTime > Parameters.TimeLimit)
+                    break;
+
+                PushClient(workTime, rnd, realRndValue, rndValue, timeDiagram);
+            }
+
+            timeDiagram.FinishDiagram();
+            return timeDiagram;
         }
     }
 }

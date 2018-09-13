@@ -145,11 +145,12 @@ namespace QTS.Core
 
             RemoveCurrentDiagram();
 
-            var timeDiagram = GraphicsFactory.CreateEmptyDiagram(parameters);
+            TimeDiagram timeDiagram;
 
             try
             {
-                Solver.FillDiagram(parameters, timeDiagram);
+                ProcessModeller modeller = new ProcessModeller(parameters);
+                timeDiagram = modeller.CreateDiagram(GraphicsFactory);
             }
             catch (Exception ex)
             {
@@ -227,28 +228,29 @@ namespace QTS.Core
 
             bool noReportRights = false;
 
-            for (int i = gradient.MinPlaceCount; i <= gradient.MaxPlaceCount; i++)
+            //Меняем параметр "КМО".
+            for (parameters.QueueCapacity = gradient.MinPlaceCount; parameters.QueueCapacity <= gradient.MaxPlaceCount; parameters.QueueCapacity++)
             {
-                //Меняем параметр "КМО".
-                parameters.QueueCapacity = i;
-
-                var timeDiagram = GraphicsFactory.CreateEmptyDiagram(parameters);
+                CallbackUi.ShowSynthesisStats(parameters.QueueCapacity - gradient.MinPlaceCount + 1, gradient.MaxPlaceCount - gradient.MinPlaceCount + 1);
+                TimeDiagram timeDiagram;
 
                 try
                 {
-                    Solver.FillDiagram(parameters, timeDiagram);
+                    ProcessModeller modeller = new ProcessModeller(parameters);
+                    timeDiagram = modeller.CreateDiagram(GraphicsFactory);
                 }
                 catch (Exception ex)
                 {
+                    CallbackUi.CloseSynthesisStats();
                     CallbackUi.ShowError("Ошибка вычислений", "При моделировании процесса возникло исключение:\n" + ex.Message);
                     return;
                 }
 
-                Solver.AddPointsToGraph(timeDiagram, parameters, graphs, gradient.MaxPlaceCount, i);
+                Solver.AddPointsToGraph(timeDiagram, parameters, graphs, gradient.MaxPlaceCount, parameters.QueueCapacity);
 
                 try
                 {
-                    File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + i + ".txt", Solver.GetDiagramAnalyzeText(timeDiagram));
+                    File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + parameters.QueueCapacity + ".txt", Solver.GetDiagramAnalyzeText(timeDiagram));
                 }
                 catch
                 {
@@ -256,13 +258,15 @@ namespace QTS.Core
                 }
             }
 
+            CallbackUi.CloseSynthesisStats();
+
             bool noGraphRights = false;
 
             for (int i = 0; i < totalGraphCount; i++)
             {
-                graphs[i].CompleteLine();
+                graphs[i].CompleteLine(false);
 
-                var bitmap = graphs[i].ExportToBitmap();
+                var bitmap = graphs[i].ExportToBitmap(true);
 
                 try
                 {

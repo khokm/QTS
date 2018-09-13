@@ -9,33 +9,6 @@ namespace QTS.Core.Tools
     static class Solver
     {
         /// <summary>
-        /// Заполняет диаграмму значениями (моделирует процесс работы системы)
-        /// </summary>
-        /// <param name="parameters">Параметры системы</param>
-        /// <param name="timeDiagram">Заполняемая временная диаграмма</param>
-        public static void FillDiagram(ParametersContainer parameters, ITimeDiagram timeDiagram)
-        {
-            RandomGenerator rnd = new RandomGenerator(parameters.MinRandomValue);
-            double workTime = 0;
-
-            DiagramCreator model = new DiagramCreator(parameters.QueueCapacity, parameters.ChannelsIntencites, parameters.PreferFirstChannel, timeDiagram);
-
-            for (int i = 0; !parameters.HasClientLimit || i < parameters.ClientLimit; i++)
-            {
-                double realRndValue;
-                double rndValue = rnd.Next(parameters.ThreadIntencity, out realRndValue);
-                workTime += rndValue;
-
-                if (parameters.HasTimeLimit && workTime > parameters.TimeLimit)
-                    break;
-
-                model.PushClient(workTime, rnd, realRndValue, rndValue);
-            }
-
-            timeDiagram.FinishDiagram();
-        }
-
-        /// <summary>
         /// Создает новые точки на каждом из графиков показателей. Используется для синтеза СМО.
         /// </summary>
         /// <param name="parameters">Параметры построения графика.</param>
@@ -166,7 +139,7 @@ namespace QTS.Core.Tools
             names[k++] = "3. Вероятность отказа";
 
             for (int i = 0; i < channelCount; i++)
-                names[k++] = string.Format("4.{0}. Вероятность занятости {0} каналов", i + 1);
+                names[k++] = string.Format("4.{0}. Вероятность занятости только {0} каналов", i + 1);
 
             names[k++] = "5. Среднее количество занятых каналов";
 

@@ -75,5 +75,9 @@
         /// <param name="title">Заголовок окна</param>
         /// <param name="message">Содержимое окна</param>
         void ShowWarning(string title, string message);
+
+        void ShowSynthesisStats(int current, int all);
+
+        void CloseSynthesisStats();
     }
 }
