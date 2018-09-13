@@ -240,11 +240,6 @@
             // 
             this.timeLimit_Numeric.DecimalPlaces = 3;
             this.timeLimit_Numeric.Enabled = false;
-            this.timeLimit_Numeric.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
             this.timeLimit_Numeric.Location = new System.Drawing.Point(164, 167);
             this.timeLimit_Numeric.Maximum = new decimal(new int[] {
             100000,
