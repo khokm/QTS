@@ -5,7 +5,7 @@
     /// </summary>
     /// <typeparam name="T">Используемая реализация временной диаграммы.</typeparam>
     /// <typeparam name="G">Используемая реализация графика.</typeparam>
-    public interface IGraphicsFactory<out T, out G> where T : TimeDiagram where G : IGraph
+    public interface IGraphicsFactory<out T, out G> where T : InteractiveDiagram where G : IGraph
     {
         /// <summary>
         /// Создает новый экземпляр пустой диграммы.
@@ -13,7 +13,7 @@
         /// <param name="channelCount">Количество каналов. Используется для вычисления количества горизонтальных линий диаграммы.</param>
         /// <param name="channelCount">Количество мест обслуживания. Используется для вычисления количества горизонтальных линий диаграммы.</param>
         /// <returns></returns>
-        T CreateEmptyDiagram(ParametersContainer parameters);
+        T CreateEmptyDiagram(int channelCount, int queueCapacity);
 
         /// <summary>
         /// Создает новый экземпляр пустого графика.

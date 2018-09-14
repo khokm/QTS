@@ -12,9 +12,9 @@ namespace QTS.OxyPlotGraphics
             return new OxyPlotGraph(XAxis, YAxis);
         }
 
-        public OxyPlotDiagram CreateEmptyDiagram(ParametersContainer parameters)
+        public OxyPlotDiagram CreateEmptyDiagram(int channelCount, int queueCapacity)
         {
-            return new OxyPlotDiagram(parameters);
+            return new OxyPlotDiagram(channelCount, queueCapacity);
         }
     }
 }

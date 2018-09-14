@@ -1,13 +1,11 @@
-﻿using QTS.Core.Diagram;
-
-namespace QTS.Core.Tools
+﻿namespace QTS.Core.Tools
 {
     /// <summary>
     /// Анализатор диаграммы. Вычисляет значения показателей.
     /// </summary>
     class DiagramAnalyzer
     {
-        IDiagramData diagram { get; }
+        DiagramData diagram { get; }
 
         /*
          * GetChannelsIntersectionLength использует очень много ресурсов,
@@ -27,7 +25,7 @@ namespace QTS.Core.Tools
         /// Создает новый анализатор.
         /// </summary>
         /// <param name="diagram"></param>
-        public DiagramAnalyzer(IDiagramData diagram)
+        public DiagramAnalyzer(DiagramData diagram)
         {
             this.diagram = diagram;
 

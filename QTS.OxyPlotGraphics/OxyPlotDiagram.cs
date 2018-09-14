@@ -10,39 +10,45 @@ namespace QTS.OxyPlotGraphics
     /// <summary>
     /// Реализация временной диаграммы с использованием библиотеки OxyPlot.
     /// </summary>
-    public class OxyPlotDiagram : TimeDiagram
+    public class OxyPlotDiagram : InteractiveDiagram
     {
         OxyPlotGraph graph;
 
         public PlotModel plotModel => graph.PlotModel;
 
-        public OxyPlotDiagram(ParametersContainer parameters) : base(parameters)
+        int height => channelCount + queueCapacity + 2;
+
+        int channelCount;
+        int queueCapacity;
+
+        public OxyPlotDiagram(int channelCount, int queueCapacity) : base()
         {
             graph = new OxyPlotGraph();
+            this.channelCount = channelCount;
+            this.queueCapacity = queueCapacity;
         }
 
-        protected override void AddPathPoint(double y, double x)
+        public override void AddPathPoint(double y, double x)
         {
             graph.AddPoint(y, x);
         }
 
-        protected override void OnPathStarted(double y, double x)
+        protected override void StartPath(double y, double x)
         {
             graph.BeginLine();
             AddAnnotation(y, x, VerticalAlignment.Bottom);
         }
 
-        protected override void OnPathFinished(double y, double x, int clientNumber, string metadata)
+        public override void OnPathFinished(double y, double x, int clientNumber)
         {
             graph.CurrentLine.Title = clientNumber.ToString();
-            graph.CurrentLine.TrackerFormatString = metadata;
             graph.CurrentLine.MouseDown += OnMouseDown;
 
             AddAnnotation(y, x, VerticalAlignment.Top);
             graph.CompleteLine();
         }
 
-        protected override void PostProcessDiagram()
+        public override void PostProcessDiagram()
         {
             var xAxis = new LinearAxis()
             {
@@ -56,8 +62,8 @@ namespace QTS.OxyPlotGraphics
             var yAxis = new CategoryAxis()
             {
                 Position = AxisPosition.Left,
-                MinimumRange = Math.Min(10, TopY * 2),
-                MaximumRange =  TopY * 2,
+                MinimumRange = Math.Min(10, height * 2),
+                MaximumRange =  height * 2,
 
                 //Делаем горизонтальные линии пунктирными
                 MajorGridlineStyle = LineStyle.Dot,
@@ -71,11 +77,11 @@ namespace QTS.OxyPlotGraphics
             yAxis.ActualLabels.Add("Отказ");
             yAxis.ActualLabels.Add("Обслужено");
 
-            for (int i = 0; i < QueueCapacity; i++)
-                yAxis.ActualLabels.Add($"Место { QueueCapacity - i }");
+            for (int i = 0; i < queueCapacity; i++)
+                yAxis.ActualLabels.Add($"Место { queueCapacity - i }");
 
-            for (int i = 0; i < ChannelCount; i++)
-                yAxis.ActualLabels.Add($"Канал { ChannelCount - i }");
+            for (int i = 0; i < channelCount; i++)
+                yAxis.ActualLabels.Add($"Канал { channelCount - i }");
 
             yAxis.ActualLabels.Add("Заявки");
 
@@ -83,7 +89,7 @@ namespace QTS.OxyPlotGraphics
             graph.PlotModel.Axes.Insert(1, yAxis);
         }
 
-        protected override void UpdateView(int visibleLineIndex)
+        public override void UpdateView(int visibleLineIndex)
         {
             var series = plotModel.Series;
 
@@ -143,6 +149,11 @@ namespace QTS.OxyPlotGraphics
                     SetVisibleLinesCount(lineIndex);
                 }
             }
+        }
+
+        public override void AddPathMetadata(string metadata)
+        {
+            graph.CurrentLine.TrackerFormatString += metadata;
         }
     }
 }

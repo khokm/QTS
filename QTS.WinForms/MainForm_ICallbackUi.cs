@@ -16,7 +16,7 @@ namespace QTS.WinForms
 
         public ParametersContainer GetDiagramParameters() => ParseDiagramParameters();
 
-        public void SetDiagramView(TimeDiagram diagram)
+        public void SetDiagramView(InteractiveDiagram diagram)
         {
             plot1.Model = (diagram as OxyPlotDiagram)?.plotModel;
         }

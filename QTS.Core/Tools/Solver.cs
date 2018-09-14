@@ -1,7 +1,4 @@
-﻿using QTS.Core.Diagram;
-using QTS.Core.Helpers;
-
-namespace QTS.Core.Tools
+﻿namespace QTS.Core.Tools
 {
     /// <summary>
     /// Просто удобные функции.
@@ -15,7 +12,7 @@ namespace QTS.Core.Tools
         /// <param name="graphs">Массив графиков показателей.</param>
         /// <param name="queueMaximumCapacity">Максимальное количество мест в очереди из всех анализируемых систем.</param>
         /// <param name="currentX">Текущая координата графика по X, куда будет внесена точка.</param>
-        public static void AddPointsToGraph(TimeDiagram timeDiagram, ParametersContainer parameters, IGraph[] graphs, int queueMaximumCapacity, double currentX)
+        public static void AddPointsToGraph(DiagramData timeDiagram, ParametersContainer parameters, IGraph[] graphs, int queueMaximumCapacity, double currentX)
         {
             var info = new DiagramAnalyzer(timeDiagram);
 
@@ -59,7 +56,7 @@ namespace QTS.Core.Tools
         /// </summary>
         /// <param name="diagramData">Анализируемая диаграмма.</param>
         /// <returns></returns>
-        public static string GetDiagramAnalyzeText(IDiagramData diagramData)
+        public static string GetDiagramAnalyzeText(DiagramData diagramData)
         {
             string text = diagramData.ReadonlyParameters.ToString() + "\r\n";
 

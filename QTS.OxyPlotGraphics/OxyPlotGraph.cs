@@ -103,6 +103,7 @@ namespace QTS.OxyPlotGraphics
             {
                 LineStyle = LineStyle.Solid
             };
+            CurrentLine.TrackerFormatString = "";
         }
 
         public void CompleteLine(bool randomColor = true)

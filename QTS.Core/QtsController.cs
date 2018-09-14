@@ -1,7 +1,5 @@
 ﻿using System;
 using System.IO;
-using QTS.Core.Diagram;
-using QTS.Core.Graphics;
 using QTS.Core.Tools;
 
 namespace QTS.Core
@@ -13,19 +11,19 @@ namespace QTS.Core
     /// </summary>
     public class QtsController
     {
-        IDiagramViewController diagramViewController = null;
-        IDiagramData diagram = null;
+        InteractiveDiagram diagramViewController = null;
+        DiagramData diagram = null;
         string analyzeText = "";
 
         ICallbackUi CallbackUi { get; }
-        IGraphicsFactory<TimeDiagram, IGraph> GraphicsFactory { get; }
+        IGraphicsFactory<InteractiveDiagram, IGraph> GraphicsFactory { get; }
 
         /// <summary>
         /// Создает новый экземпляр приложения для построения и анализа СМО.
         /// </summary>
         /// <param name="callbackUi">Используемый для обратной связи пользовательский интерфейс</param>
         /// <param name="graphicsFactory">Фабрика для создания графических элементов.</param>
-        public QtsController(ICallbackUi callbackUi, IGraphicsFactory<TimeDiagram, IGraph> graphicsFactory)
+        public QtsController(ICallbackUi callbackUi, IGraphicsFactory<InteractiveDiagram, IGraph> graphicsFactory)
         {
             CallbackUi = callbackUi;
             GraphicsFactory = graphicsFactory;
@@ -63,7 +61,7 @@ namespace QTS.Core
 
             if (parameters.ChannelCount < 0 || parameters.QueueCapacity < 0)
             {
-                CallbackUi.ShowError("Эта ошибка никогда не вылезет", "Надо было юзать unit");
+                CallbackUi.ShowError("Эта ошибка никогда не вылезет", "Надо было юзать uint");
                 return false;
             }
 
@@ -145,12 +143,21 @@ namespace QTS.Core
 
             RemoveCurrentDiagram();
 
-            TimeDiagram timeDiagram;
+            DiagramData timeDiagram;
+
+            bool useGraphics = true;
+
+            if (parameters.HasClientLimit && parameters.ClientLimit > 200 || parameters.TimeLimit * parameters.ThreadIntencity > 200)
+            {
+                string text = parameters.HasClientLimit ? string.Format("содержит {0}", parameters.ClientLimit) : string.Format("будет содержать около {0}", parameters.ThreadIntencity * parameters.TimeLimit);
+                useGraphics = CallbackUi.YesNoDialog("Предупреждение", "Временная диаграмма " + text + " линий.\nЕе отрисовка может вызвать замедление работы компьютера.\n Отрисовать диаграмму ?\n(анализ диаграммы возможен при любом выборе)");
+            }
+
+            ProcessModeller modeller = new ProcessModeller(parameters);
 
             try
             {
-                ProcessModeller modeller = new ProcessModeller(parameters);
-                timeDiagram = modeller.CreateDiagram(GraphicsFactory);
+                timeDiagram = useGraphics ? modeller.CreateDiagram(GraphicsFactory) : modeller.CreateDiagram();
             }
             catch (Exception ex)
             {
@@ -161,14 +168,10 @@ namespace QTS.Core
             //Сохраним ссылку на диаграмму, чтобы позже по команде пользователя провести ее анализ.
             diagram = timeDiagram;
 
-            int clientCount = diagram.SummaryClientCount;
-
-            bool showDiagram = clientCount < 200 || CallbackUi.YesNoDialog("Предупреждение", "Временная диаграмма содержит" + clientCount + " линий.\nЕе отрисовка может вызвать замедление работы компьютера.\n Отрисовать диаграмму?\n(анализ диаграммы возможен при любом выборе)");
-
-            if (showDiagram)
+            if (useGraphics)
             {
-                CallbackUi.SetDiagramView(timeDiagram);
-                diagramViewController = timeDiagram;
+                CallbackUi.SetDiagramView(timeDiagram.InteractiveDiagram);
+                diagramViewController = timeDiagram.InteractiveDiagram;
                 diagramViewController.ViewUpdated += CallbackUi.InvalidateDiagramView;
                 diagramViewController.GoToEnd();
             }
@@ -232,7 +235,7 @@ namespace QTS.Core
             for (parameters.QueueCapacity = gradient.MinPlaceCount; parameters.QueueCapacity <= gradient.MaxPlaceCount; parameters.QueueCapacity++)
             {
                 CallbackUi.ShowSynthesisStats(parameters.QueueCapacity - gradient.MinPlaceCount + 1, gradient.MaxPlaceCount - gradient.MinPlaceCount + 1);
-                TimeDiagram timeDiagram;
+                DiagramData timeDiagram;
 
                 try
                 {

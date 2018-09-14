@@ -15,7 +15,7 @@
         /// Устанавливает диаграмму, которая должна быть отображена в главном окне.
         /// </summary>
         /// <param name="diagram">Отображаемая диаграмма</param>
-        void SetDiagramView(TimeDiagram diagram);
+        void SetDiagramView(InteractiveDiagram diagram);
 
         /// <summary>
         /// Выключает отображение диаграммы в главном окне.

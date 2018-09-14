@@ -1,5 +1,4 @@
-﻿using QTS.Core.Diagram;
-using QTS.Core.Helpers;
+﻿using QTS.Core.Helpers;
 
 namespace QTS.Core.Tools
 {
@@ -87,7 +86,7 @@ namespace QTS.Core.Tools
         /// <param name="channelIndex">Индекс используемого места обслуживания.</param>
         /// <param name="arrivalTime">Время начала обслуживания.</param>
         /// <param name="rnd">Используемый ГСЧ</param>
-        void CreateChannelLine(int channelIndex, double arrivalTime, RandomGenerator rnd, ITimeDiagram timeDiagram)
+        void CreateChannelLine(int channelIndex, double arrivalTime, RandomGenerator rnd, DiagramData timeDiagram)
         {
             double realRndValue;
             double clientSerivceTime = rnd.Next(Parameters.ChannelsIntencites[channelIndex], out realRndValue);
@@ -105,7 +104,7 @@ namespace QTS.Core.Tools
         /// </summary>
         /// <param name="arrivalTime">Время прибытия заявки</param>
         /// <param name="rnd">Импользуемый ГСЧ</param>
-        void PushClient(double arrivalTime, RandomGenerator rnd, double realRndValue, double rndValue, ITimeDiagram timeDiagram)
+        void PushClient(double arrivalTime, RandomGenerator rnd, double realRndValue, double rndValue, DiagramData timeDiagram)
         {
             timeDiagram.PushStartPoint(arrivalTime, realRndValue, rndValue);
 
@@ -146,12 +145,11 @@ namespace QTS.Core.Tools
             CreateChannelLine(usingChannel, queueIdleTimes[0], rnd, timeDiagram);
         }
 
-        public T CreateDiagram<T>(IGraphicsFactory<T, IGraph> factory) where T : TimeDiagram, ITimeDiagram
+        void FillDiagram(DiagramData timeDiagram)
         {
             RandomGenerator rnd = new RandomGenerator(Parameters.MinRandomValue);
-            double workTime = 0;
 
-            T timeDiagram = factory.CreateEmptyDiagram(Parameters);
+            double workTime = 0;
 
             for (int i = 0; !Parameters.HasClientLimit || i < Parameters.ClientLimit; i++)
             {
@@ -166,7 +164,26 @@ namespace QTS.Core.Tools
             }
 
             timeDiagram.FinishDiagram();
-            return timeDiagram;
+        }
+
+        public DiagramData CreateDiagram()
+        {
+            var diagram = new DiagramData(Parameters, null);
+
+            FillDiagram(diagram);
+
+            return diagram;
+        }
+
+        public DiagramData CreateDiagram<T>(IGraphicsFactory<T, IGraph> factory) where T : InteractiveDiagram
+        {
+            T interactiveDiagram = factory.CreateEmptyDiagram(Parameters.ChannelCount, Parameters.QueueCapacity);
+
+            DiagramData diagram = new DiagramData(Parameters, interactiveDiagram);
+
+            FillDiagram(diagram);
+
+            return diagram;
         }
     }
 }

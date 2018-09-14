@@ -35,10 +35,8 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="InteractiveDiagram.cs" />
     <Compile Include="QueuePlaceGradientData.cs" />
-    <Compile Include="Diagram\IDiagramData.cs" />
-    <Compile Include="Diagram\ITimeDiagram.cs" />
-    <Compile Include="Graphics\IDiagramViewController.cs" />
     <Compile Include="Helpers\RandomGenerator.cs" />
     <Compile Include="ICallbackUi.cs" />
     <Compile Include="IGraph.cs" />
@@ -46,7 +44,7 @@
     <Compile Include="ParametersContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QtsController.cs" />
-    <Compile Include="TimeDiagram.cs" />
+    <Compile Include="DiagramData.cs" />
     <Compile Include="Tools\DiagramAnalyzer.cs" />
     <Compile Include="Tools\ProcessModeller.cs" />
     <Compile Include="Tools\Solver.cs" />
