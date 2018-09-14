@@ -13,20 +13,6 @@ namespace QTS.Core
     /// </summary>
     public abstract class TimeDiagram : ITimeDiagram, IDiagramData, IDiagramViewController
     {
-        /// <summary>
-        /// Простая линия
-        /// </summary>
-        struct Line
-        {
-            public double start, end;
-
-            public Line(double start, double end)
-            {
-                this.start = start;
-                this.end = end;
-            }
-        }
-
         protected int ChannelCount { get; }
         protected int QueueCapacity { get; }
 
