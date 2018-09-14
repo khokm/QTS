@@ -75,7 +75,7 @@ namespace QTS.Core.Tools
             text += "   1.1 Из них обслужено: " + diagramData.ServedClientCount + " шт\r\n";
             text += "   1.2 Из них утеряно: " + diagramData.LostClientCount + " шт\r\n";
 
-            text += " 2. Время работы (разница между временем появления первой и отъездом последней заявки): " + (float)diagramData.SystemWorkTime + " часов\r\n\r\n";
+            text += " 2. Время работы системы: " + (float)diagramData.SystemWorkTime + " часов\r\n\r\n";
 
             var info = new DiagramAnalyzer(diagramData);
 
@@ -147,7 +147,7 @@ namespace QTS.Core.Tools
                 names[k++] = string.Format("6.{0}. Вероятность простоя {0} каналов", i + 1);
 
             for (int i = 0; i < queueCapacity; i++)
-                names[k++] = string.Format("7.{0}. Вероятность того, что в очереди будет {0} заявок", i + 1);
+                names[k++] = string.Format("7.{0}. Вероятность того, что в очереди будет только {0} заявок", i + 1);
 
             names[k++] = "8. Среднее количество заявок в очереди";
             names[k++] = "9. Среднее время ожидания заявки в очереди";
