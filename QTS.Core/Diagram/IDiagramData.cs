@@ -74,12 +74,6 @@
         /// <returns>Время</returns>
         double GetChannelsIntersectionLength(int channelCount);
 
-        /// <summary>
-        /// Возвращает количество заявок, находящееся в системе в указанный момент времени.
-        /// </summary>
-        /// <param name="point">Момент времени, в который нужно зарегистрировать количество заявок</param>
-        /// <param name="step">'Ширина' момента времени</param>
-        /// <returns>Количество заявок</returns>
-        int GetClientCountAtTime(double point, double step);
+        double AverageClientCount { get; }
     }
 }

@@ -33,23 +33,12 @@ namespace QTS.Core
 
         protected int TopY => 2 + ChannelCount + QueueCapacity;
 
-        readonly List<Line>[] queueLines;
         readonly double[] QueueBusyTimes;
 
-        double currentClientX;
+        double currentClientPosition;
         int currentClientIndex;
 
-        readonly List<Line>[] channelLines;
-
         string currentLineMetadata = "";
-
-        /* Массив "обратных "линий (т.е. пустых промежутков между реальными линиями).
-         * Используется при вычислении одновременной занятости n каналов:
-         * для этого берется одна из возможных комбинаций (сочетание) n каналов, находится пересечение ее составляющих.
-         * После этого вычитаются любые промежутки, где есть пересечение с другими каналами, не входящими в комбинацию - 
-         * то есть, просто находится пересечение с линиями из этого массива.
-         */
-        readonly Line[][] inverseChannelLines;
 
         int currentVisibleIndex;
         readonly ParametersContainer readonlyParameters;
@@ -67,16 +56,10 @@ namespace QTS.Core
             ChannelCount = parameters.ChannelCount;
             QueueCapacity = parameters.QueueCapacity;
 
-            channelLines = new List<Line>[ChannelCount];
-            for (int i = 0; i < ChannelCount; i++)
-                channelLines[i] = new List<Line>();
+            ChannelLeaveTime = new double[ChannelCount];
+            QueueLeaveTime = new double[QueueCapacity];
 
-            inverseChannelLines = new Line[ChannelCount][];
-
-            queueLines = new List<Line>[QueueCapacity];
-            for (int i = 0; i < QueueCapacity; i++)
-                queueLines[i] = new List<Line>();
-
+            ChannelBusyTimes = new double[ChannelCount + 1];//+ время занятости 0 каналов
             QueueBusyTimes = new double[QueueCapacity];
 
             ShowPreviousLines = true;
@@ -126,6 +109,114 @@ namespace QTS.Core
             viewUpdated?.Invoke();
         }
 
+        #region ITimeDiagram
+        void ITimeDiagram.PushStartPoint(double arrivalTime, double realRndValue, double rndValue)
+        {
+            currentClientPosition = arrivalTime;
+            currentClientIndex = SummaryClientCount;
+
+            if (SummaryClientCount == 0)
+                FirstClientArrivalTime = arrivalTime;
+
+            int y = TopY;
+
+            OnPathStarted(y, arrivalTime);
+            AddPathPoint(y, arrivalTime);
+
+            currentLineMetadata = $"Заявка { SummaryClientCount + 1 }.\nt (интервал момента прихода): { (float)rndValue } ч (rnd: { (float)realRndValue });\n";
+
+            foreach (var time in ChannelLeaveTime)
+                if (time >= arrivalTime)
+                    ClientAtTimeSum++;
+
+            foreach (var time in QueueLeaveTime)
+                if (time >= arrivalTime)
+                    ClientAtTimeSum++;
+        }
+
+        double[] ChannelLeaveTime;
+        double[] QueueLeaveTime;
+        public double[] ChannelBusyTimes;
+
+        int ClientAtTimeSum;
+
+        void ITimeDiagram.PushChannelLine(int channelIndex, double serviceTime, double realRndValue)
+        {
+            double departureTime = currentClientPosition + serviceTime;
+
+            ChannelLeaveTime[channelIndex] = departureTime;
+
+            int busyChannels = 1;
+
+            foreach (var maxDepTime in ChannelLeaveTime.OrderByDescending(x => x))
+            {
+                if (maxDepTime >= departureTime)
+                {
+                    ChannelBusyTimes[busyChannels] += serviceTime;
+                    ChannelBusyTimes[busyChannels - 1] -= serviceTime;
+                }
+                else
+                {
+                    double timeDiff = maxDepTime - currentClientPosition;
+
+                    if (timeDiff <= 0)
+                        break;
+
+                    ChannelBusyTimes[busyChannels] += timeDiff;
+                    ChannelBusyTimes[busyChannels - 1] -= timeDiff;
+                }
+
+                busyChannels++;
+            }
+
+            SummaryServiceTime += serviceTime;
+
+            int y = TopY - 1 - channelIndex;
+            AddPathPoint(y, currentClientPosition);
+            AddPathPoint(y, departureTime);
+
+            currentLineMetadata += $"t (время обслуживания): { (float)serviceTime } ч (rnd: { (float)realRndValue }).";
+            currentClientPosition = departureTime;
+        }
+
+        void ITimeDiagram.PushQueueLine(int queuePlaceIndex, double queueTime)
+        {
+            if (currentClientIndex == SummaryClientCount)
+            {
+                QueuedClientCount++;
+                currentClientIndex++;
+            }
+
+            double departureTime = currentClientPosition + queueTime;
+
+            QueueLeaveTime[queuePlaceIndex] = departureTime;
+
+            QueueBusyTimes[queuePlaceIndex] += queueTime;
+
+            if (queuePlaceIndex != 0)
+                QueueBusyTimes[queuePlaceIndex - 1] -= queueTime;
+
+            int y = TopY - 1 - ChannelCount - queuePlaceIndex;
+
+            AddPathPoint(y, currentClientPosition);
+            AddPathPoint(y, departureTime);
+            currentClientPosition = departureTime;
+        }
+
+        void ITimeDiagram.PushServedPoint()
+        {
+            ServedClientCount++;
+            int y = 1;
+            FinishPath(y, currentClientPosition);
+        }
+
+        void ITimeDiagram.PushRefusedPoint()
+        {
+            LostClientCount++;
+            int y = 0;
+            FinishPath(y, currentClientPosition);
+        }
+
         /// <summary>
         /// Заканчивает создание пути
         /// </summary>
@@ -140,144 +231,12 @@ namespace QTS.Core
             OnPathFinished(y, x, SummaryClientCount, currentLineMetadata);
         }
 
-        /// <summary>
-        /// Возвращает массив "обратных" линий.
-        /// Вызывается по окончании создания диаграммы.
-        /// </summary>
-        void CaluclateInverseChannelLines()
-        {
-            for (int i = 0; i < ChannelCount; i++)
-            {
-                var lines = channelLines[i];
-
-                if (lines.Count == 0)
-                {
-                    inverseChannelLines[i] = new []{ new Line(FirstClientArrivalTime, LastClientDepartureTime) };
-                    continue;
-                }
-
-                List<Line> result = new List<Line>();
-
-                result.Add(new Line(FirstClientArrivalTime, lines[0].start));
-
-                for (int k = 0; k < lines.Count - 1; k++)
-                    result.Add(new Line(lines[k].end, lines[k + 1].start));
-
-                result.Add(new Line(lines[lines.Count - 1].end, LastClientDepartureTime));
-
-                inverseChannelLines[i] = result.ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Возвращает пересечение двух множеств линий.
-        /// </summary>
-        /// <param name="lines1"></param>
-        /// <param name="lines2"></param>
-        /// <returns></returns>
-        Line[] LineIntersect(IEnumerable<Line> lines1, IEnumerable<Line> lines2)
-        {
-            List<Line> result = new List<Line>();
-
-            foreach (Line a in lines1)
-            {
-                foreach (Line b in lines2)
-                {
-                    double start = Math.Max(a.start, b.start);
-                    double end = Math.Min(a.end, b.end);
-
-                    if (end - start <= 0)
-                        continue;
-
-                    result.Add(new Line(start, end));
-                }
-            }
-
-            return result.ToArray();
-        }
-
-
-        #region ITimeDiagram
-        void ITimeDiagram.PushStartPoint(double arrivalTime, double realRndValue, double rndValue)
-        {
-            currentClientX = arrivalTime;
-            currentClientIndex = SummaryClientCount;
-
-            if (SummaryClientCount == 0)
-                FirstClientArrivalTime = arrivalTime;
-
-            int y = TopY;
-
-            OnPathStarted(y, arrivalTime);
-            AddPathPoint(y, arrivalTime);
-
-            currentLineMetadata = $"Заявка { SummaryClientCount + 1 }.\nt (интервал момента прихода): { (float)rndValue } ч (rnd: { (float)realRndValue });\n";
-        }
-
-        void ITimeDiagram.PushChannelLine(int channelIndex, double serviceTime, double realRndValue)
-        {
-            double departureTime = currentClientX + serviceTime;
-
-            Line line = new Line(currentClientX, departureTime);
-
-            channelLines[channelIndex].Add(line);
-
-            SummaryServiceTime += serviceTime;
-
-            int y = TopY - 1 - channelIndex;
-            AddPathPoint(y, currentClientX);
-            AddPathPoint(y, departureTime);
-
-            currentLineMetadata += $"t (время обслуживания): { (float)serviceTime } ч (rnd: { (float)realRndValue });";
-            currentClientX = departureTime;
-        }
-
-        void ITimeDiagram.PushQueueLine(int queuePlaceIndex, double queueTime)
-        {
-            if (currentClientIndex == SummaryClientCount)
-            {
-                QueuedClientCount++;
-                currentClientIndex++;
-            }
-
-            double departureTime = currentClientX + queueTime;
-
-            Line line = new Line(currentClientX, departureTime);
-
-            queueLines[queuePlaceIndex].Add(line);
-
-            QueueBusyTimes[queuePlaceIndex] += queueTime;
-
-            if (queuePlaceIndex != 0)
-                QueueBusyTimes[queuePlaceIndex - 1] -= queueTime;
-
-            int y = TopY - 1 - ChannelCount - queuePlaceIndex;
-            AddPathPoint(y, currentClientX);
-            AddPathPoint(y, departureTime);
-            currentClientX = departureTime;
-        }
-
-        void ITimeDiagram.PushServedPoint()
-        {
-            ServedClientCount++;
-            int y = 1;
-            FinishPath(y, currentClientX);
-        }
-
-        void ITimeDiagram.PushRefusedPoint()
-        {
-            LostClientCount++;
-            int y = 0;
-            FinishPath(y, currentClientX);
-        }
-
         void ITimeDiagram.FinishDiagram()
         {
             if (Finished)
                 throw new Exception("Диаграмма уже построена");
 
             Finished = true;
-            CaluclateInverseChannelLines();
             PostProcessDiagram();
         }
 
@@ -287,6 +246,8 @@ namespace QTS.Core
         #region IDiagramData
 
         ParametersContainer IDiagramData.ReadonlyParameters => readonlyParameters;
+
+        double IDiagramData.AverageClientCount => (double)ClientAtTimeSum / SummaryClientCount;
 
         int IDiagramData.ChannelCount => ChannelCount;
 
@@ -302,7 +263,7 @@ namespace QTS.Core
 
         double IDiagramData.LastClientDepartureTime => LastClientDepartureTime;
 
-        double IDiagramData.SystemWorkTime => LastClientDepartureTime - FirstClientArrivalTime;
+        double IDiagramData.SystemWorkTime => LastClientDepartureTime;
 
         double[] IDiagramData.QueueBusyTimes => QueueBusyTimes;
 
@@ -310,60 +271,14 @@ namespace QTS.Core
 
         int IDiagramData.QueuedClientCount => QueuedClientCount;
 
-        double IDiagramData.GetChannelsIntersectionLength(int count)
+        double IDiagramData.GetChannelsIntersectionLength(int channelCount)
         {
-            double intersectionLength = 0;
+            if (channelCount == 0)
+                return LastClientDepartureTime - ChannelBusyTimes[1];
+            if (channelCount == ChannelCount)
+                return ChannelBusyTimes[channelCount];
 
-            foreach (var usingChannels in Permuter.Permute(ChannelCount, count))
-            {
-                var intersection = new Line[]
-                {
-                    new Line(0, double.MaxValue)
-                };
-
-                for (int i = 0; i < count; i++)
-                    intersection = LineIntersect(intersection, channelLines[usingChannels[i]]);
-
-                for (int i = 0; i < ChannelCount; i++)
-                    if (!usingChannels.Contains(i))
-                        intersection = LineIntersect(intersection, inverseChannelLines[i]);
-
-                foreach (var line in intersection)
-                    intersectionLength += line.end - line.start;
-
-            }
-
-            return intersectionLength;
-        }
-
-        int IDiagramData.GetClientCountAtTime(double point, double step)
-        {
-            int count = 0;
-
-            foreach (var line in queueLines)
-            {
-                var result = LineIntersect(line, new[] { new Line(point - step / 2, point + step / 2) });
-
-                if (result.Length != 0)
-                    count++;
-            }
-
-            foreach (var line in channelLines)
-            {
-                var result = LineIntersect
-                    (
-                    line,
-                    new Line[]
-                    {
-                        new Line(point - step / 2, point + step / 2)
-                    }
-                    );
-
-                if (result.Length != 0)
-                    count++;
-            }
-
-            return count;
+            return ChannelBusyTimes[channelCount] - ChannelBusyTimes[channelCount + 1];
         }
         #endregion
 

@@ -35,12 +35,10 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Diagram\Line.cs" />
     <Compile Include="QueuePlaceGradientData.cs" />
     <Compile Include="Diagram\IDiagramData.cs" />
     <Compile Include="Diagram\ITimeDiagram.cs" />
     <Compile Include="Graphics\IDiagramViewController.cs" />
-    <Compile Include="Helpers\Permuter.cs" />
     <Compile Include="Helpers\RandomGenerator.cs" />
     <Compile Include="ICallbackUi.cs" />
     <Compile Include="IGraph.cs" />

@@ -173,26 +173,6 @@ namespace QTS.Core.Tools
         /// <summary>
         /// Среднее количество заявок, находящихся в системе.
         /// </summary>
-        public float AverageClientCount
-        {
-            get
-            {
-                double step = diagram.SystemWorkTime / 100;
-
-                double currentTime = diagram.FirstClientArrivalTime - step / 2;
-
-                int clientCount = 0;
-
-                for (int i = 0; i < 100; i++)
-                {
-                    currentTime += step;
-
-                    int c = diagram.GetClientCountAtTime(currentTime, step);
-                    clientCount += c;
-                }
-
-                return (float)clientCount / 100;
-            }
-        }
+        public float AverageClientCount => (float)diagram.AverageClientCount;
     }
 }
