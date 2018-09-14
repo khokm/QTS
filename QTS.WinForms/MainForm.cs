@@ -106,9 +106,8 @@ namespace QTS.WinForms
                         preferFirstChannel_CheckBox.Checked = config.PreferFirstChannel;
 
                         channelIntencites.Items.Clear();
-                        int counter = 1;
                         foreach (var item in config.ChannelsIntencites)
-                            channelIntencites.Items.Add(string.Format("{0}. {1}", counter++, item));
+                            AddChannelIntencity(item);
                     }
                 }
             }
@@ -116,6 +115,12 @@ namespace QTS.WinForms
             {
                 ShowError("Ошибка", "Не удалось загрузить конфигурацию");
             }
+        }
+
+        private void AddChannelIntencity(int value)
+        {
+            channelIntencites.Items.Add(string.Format("{0}. {1}", channelIntencites.Items.Count + 1, value));
+            deleteChannelIntencity_Button.Enabled = true;
         }
 
         #region Обработчики кнопок правой панели
@@ -128,9 +133,7 @@ namespace QTS.WinForms
 
                 if (valueForm.DialogResult == DialogResult.OK)
                 {
-                    channelIntencites.Items.Add(string.Format("{0}. {1}", channelIntencites.Items.Count + 1, valueForm.Value));
-                    deleteChannelIntencity_Button.Enabled = true;
-
+                    AddChannelIntencity(valueForm.Value);
                     if (showNotify)
                     {
                         ShowWarning("Подсказка", "Для редактирования интенсивности канала используйте двойной клик мышью.");
