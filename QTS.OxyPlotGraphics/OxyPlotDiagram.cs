@@ -26,27 +26,16 @@ namespace QTS.OxyPlotGraphics
             graph.AddPoint(y, x);
         }
 
-
-        protected override void AddChannelRndMetadata(double realRndValue, double rndValue)
-        {
-            graph.CurrentLine.TrackerFormatString += $"t (время обслуживания): { (float)rndValue } (rnd: { (float)realRndValue });";
-        }
-
-        protected override void OnPathStarted(double y, double x, double realRndValue, double rndValue)
+        protected override void OnPathStarted(double y, double x)
         {
             graph.BeginLine();
-
-            graph.CurrentLine.TrackerFormatString = $"t (время, прошедшее с появления предыдущей заявки): { (float)rndValue } (rnd: { (float)realRndValue });\n";
-
             AddAnnotation(y, x, VerticalAlignment.Bottom);
         }
 
-        protected override void OnPathFinished(double y, double x)
+        protected override void OnPathFinished(double y, double x, int clientNumber, string metadata)
         {
-            int clientNum = SummaryClientCount + 1;
-
-            graph.CurrentLine.Title = clientNum.ToString();
-            graph.CurrentLine.TrackerFormatString = $"Заявка { clientNum }.\n{ graph.CurrentLine.TrackerFormatString }";
+            graph.CurrentLine.Title = clientNumber.ToString();
+            graph.CurrentLine.TrackerFormatString = metadata;
             graph.CurrentLine.MouseDown += OnMouseDown;
 
             AddAnnotation(y, x, VerticalAlignment.Top);

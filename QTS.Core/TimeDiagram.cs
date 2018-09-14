@@ -16,8 +16,6 @@ namespace QTS.Core
         protected int ChannelCount { get; }
         protected int QueueCapacity { get; }
 
-        protected int SummaryClientCount { get; private set; }
-
         protected double FirstClientArrivalTime { get; private set; }
         protected double LastClientDepartureTime { get; private set; }
 
@@ -29,6 +27,8 @@ namespace QTS.Core
 
         protected int ServedClientCount { get; private set; }
         protected int LostClientCount { get; private set; }
+        protected int SummaryClientCount => ServedClientCount + LostClientCount;
+
         protected int QueuedClientCount { get; private set; }
 
         protected int TopY => 2 + ChannelCount + QueueCapacity;
@@ -40,6 +40,8 @@ namespace QTS.Core
         int currentClientIndex;
 
         readonly List<Line>[] channelLines;
+
+        string currentLineMetadata = "";
 
         /* Массив "обратных "линий (т.е. пустых промежутков между реальными линиями).
          * Используется при вычислении одновременной занятости n каналов:
@@ -87,21 +89,19 @@ namespace QTS.Core
         /// <param name="x"></param>
         protected abstract void AddPathPoint(double y, double x);
 
-        protected abstract void AddChannelRndMetadata(double realRndValue, double rndValue);
-
         /// <summary>
         /// Вызывается при создании нового пути заявки
         /// </summary>
         /// <param name="y"></param>
         /// <param name="x"></param>
-        protected abstract void OnPathStarted(double y, double x, double realRndValue, double rndValue);
+        protected abstract void OnPathStarted(double y, double x);
 
         /// <summary>
         /// Вызывается по окончании создания пути заявки
         /// </summary>
         /// <param name="y"></param>
         /// <param name="x"></param>
-        protected abstract void OnPathFinished(double y, double x);
+        protected abstract void OnPathFinished(double y, double x, int clientNumber, string metadata);
 
         /// <summary>
         /// Вызывается по окончании создания диаграммы
@@ -137,8 +137,7 @@ namespace QTS.Core
                 LastClientDepartureTime = x;
 
             AddPathPoint(y, x);
-            OnPathFinished(y, x);
-            SummaryClientCount++;
+            OnPathFinished(y, x, SummaryClientCount, currentLineMetadata);
         }
 
         /// <summary>
@@ -197,6 +196,7 @@ namespace QTS.Core
             return result.ToArray();
         }
 
+
         #region ITimeDiagram
         void ITimeDiagram.PushStartPoint(double arrivalTime, double realRndValue, double rndValue)
         {
@@ -208,21 +208,27 @@ namespace QTS.Core
 
             int y = TopY;
 
-            OnPathStarted(y, arrivalTime, realRndValue, rndValue);
+            OnPathStarted(y, arrivalTime);
             AddPathPoint(y, arrivalTime);
+
+            currentLineMetadata = $"Заявка { SummaryClientCount + 1 }.\nt (интервал момента прихода): { (float)rndValue } ч (rnd: { (float)realRndValue });\n";
         }
 
         void ITimeDiagram.PushChannelLine(int channelIndex, double serviceTime, double realRndValue)
         {
             double departureTime = currentClientX + serviceTime;
-            channelLines[channelIndex].Add(new Line(currentClientX, departureTime));
+
+            Line line = new Line(currentClientX, departureTime);
+
+            channelLines[channelIndex].Add(line);
 
             SummaryServiceTime += serviceTime;
 
             int y = TopY - 1 - channelIndex;
             AddPathPoint(y, currentClientX);
             AddPathPoint(y, departureTime);
-            AddChannelRndMetadata(realRndValue, serviceTime);
+
+            currentLineMetadata += $"t (время обслуживания): { (float)serviceTime } ч (rnd: { (float)realRndValue });";
             currentClientX = departureTime;
         }
 
@@ -236,7 +242,9 @@ namespace QTS.Core
 
             double departureTime = currentClientX + queueTime;
 
-            queueLines[queuePlaceIndex].Add(new Line(currentClientX, departureTime));
+            Line line = new Line(currentClientX, departureTime);
+
+            queueLines[queuePlaceIndex].Add(line);
 
             QueueBusyTimes[queuePlaceIndex] += queueTime;
 
