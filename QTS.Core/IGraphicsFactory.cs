@@ -1,4 +1,6 @@
-﻿namespace QTS.Core
+﻿using System.Collections.Generic;
+
+namespace QTS.Core
 {
     /// <summary>
     /// Фабрика графических объектов.
@@ -20,5 +22,17 @@
         /// </summary>
         /// <returns></returns>
         G CreateEmptyGraph(string XAxis = "", string YAxis = "");
+
+
+        /// <summary>
+        /// Создает новый экземпяр графика и равномерно заполняет его значениями.
+        /// </summary>
+        /// <param name="minX">Начальное значение по X</param>
+        /// <param name="yValues">Массив значений Y</param>
+        /// <param name="XAxis">Название оси абцисс</param>
+        /// <param name="YAxis">Название оси ординат</param>
+        /// <returns></returns>
+        G CreateEmptyGraph(int minX, IEnumerable<double> yValues, string XAxis = "", string YAxis = "");
+
     }
 }

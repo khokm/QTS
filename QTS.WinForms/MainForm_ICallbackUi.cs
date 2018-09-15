@@ -3,6 +3,7 @@ using QTS.Core;
 using QTS.OxyPlotGraphics;
 using System.Diagnostics;
 using System;
+using System.IO;
 
 namespace QTS.WinForms
 {
@@ -34,12 +35,30 @@ namespace QTS.WinForms
 
         public string GetFolderPath(string description, string defaultFolder)
         {
-            using (var fbd = new FolderBrowserDialog() { Description = description, SelectedPath = defaultFolder })
+            bool done = false;
+            while (!done)
             {
-                DialogResult result = fbd.ShowDialog();
+                done = true;
+                using (var fbd = new FolderBrowserDialog() { Description = description, SelectedPath = defaultFolder })
+                {
+                    DialogResult result = fbd.ShowDialog();
 
-                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
-                    return fbd.SelectedPath;
+                    if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                    {
+                        try
+                        {
+                            string name = fbd.SelectedPath + "/" + new Random().Next() + ".test";
+                            File.Create(name).Close();
+                            File.Delete(name);
+                            return fbd.SelectedPath;
+                        }
+                        catch
+                        {
+                            ShowError("Выбор папки", "Недостаточно прав для записи в папку");
+                            done = false;
+                        }
+                    }
+                }
             }
 
             return "";

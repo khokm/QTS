@@ -6,6 +6,7 @@ using QTS.Core;
 using OxyPlot.Axes;
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 namespace QTS.OxyPlotGraphics
 {
@@ -87,9 +88,22 @@ namespace QTS.OxyPlotGraphics
                     //Title = YAxis
                 };
 
+                Title = YAxis;
                 PlotModel.Axes.Insert(1, yAxis);
             }
 
+        }
+
+        public OxyPlotGraph(int minX, IEnumerable<double> yValues, string xAxis, string yAxis) : this(xAxis, yAxis)
+        {
+            AddPoints(yValues, minX);
+        }
+
+        public void AddPoints(IEnumerable<double> yValues, double minX)
+        {
+            BeginLine();
+            CurrentLine.Points.AddRange(yValues.Select(value => new DataPoint(minX++, value)));
+            CompleteLine();
         }
 
         public void AddPoint(double y, double x)
@@ -106,7 +120,7 @@ namespace QTS.OxyPlotGraphics
             CurrentLine.TrackerFormatString = "";
         }
 
-        public void CompleteLine(bool randomColor = true)
+        public void CompleteLine(bool randomColor = false)
         {
             if(randomColor)
                 CurrentLine.Color = DefaultColors[_currentColorIndex++ % DefaultColors.Count];
@@ -125,6 +139,8 @@ namespace QTS.OxyPlotGraphics
 
                 PlotModel.Axes[1].MinimumRange = max;
             }
+
+            PlotModel.Axes[0].Minimum = PlotModel.Series.Select(line => ((LineSeries)line).Points.Select(point => point.X)).Min().First();
 
             PngExporter exp = new PngExporter();
             return exp.ExportToBitmap(PlotModel);

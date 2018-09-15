@@ -2,13 +2,13 @@
 {
     public class QueuePlaceGradientData
     {
-        public int MinPlaceCount { get; }
-        public int MaxPlaceCount { get; }
+        public int MinQueueCapacity { get; }
+        public int MaxQueueCapacity { get; }
 
         public QueuePlaceGradientData(int minPlaceCount, int maxPlaceCount)
         {
-            MinPlaceCount = minPlaceCount;
-            MaxPlaceCount = maxPlaceCount;
+            MinQueueCapacity = minPlaceCount;
+            MaxQueueCapacity = maxPlaceCount;
         }
     }
 }

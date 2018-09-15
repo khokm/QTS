@@ -37,17 +37,18 @@
   <ItemGroup>
     <Compile Include="InteractiveDiagram.cs" />
     <Compile Include="QueuePlaceGradientData.cs" />
-    <Compile Include="Helpers\RandomGenerator.cs" />
+    <Compile Include="Tools\RandomGenerator.cs" />
     <Compile Include="ICallbackUi.cs" />
     <Compile Include="IGraph.cs" />
     <Compile Include="IGraphicsFactory.cs" />
     <Compile Include="ParametersContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QtsController.cs" />
-    <Compile Include="DiagramData.cs" />
-    <Compile Include="Tools\DiagramAnalyzer.cs" />
+    <Compile Include="Tools\DiagramData.cs" />
+    <Compile Include="Tools\Formulas.cs" />
     <Compile Include="Tools\ProcessModeller.cs" />
-    <Compile Include="Tools\Solver.cs" />
+    <Compile Include="Tools\ReportTool.cs" />
+    <Compile Include="Tools\Metric.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 
 namespace QTS.Core
 {
@@ -26,6 +27,8 @@ namespace QTS.Core
         /// Добавляет точку в текущую линию
         /// </summary>
         void AddPoint(double y, double x);
+
+        void AddPoints(IEnumerable<double> yValues, double minX);
 
         /// <summary>
         /// Конвертирует график в PNG-изображение

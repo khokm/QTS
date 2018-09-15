@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using QTS.Core.Tools;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace QTS.Core
 {
@@ -17,6 +19,44 @@ namespace QTS.Core
 
         ICallbackUi CallbackUi { get; }
         IGraphicsFactory<InteractiveDiagram, IGraph> GraphicsFactory { get; }
+
+
+        static Metric[] GetMetrics(int channelCount, int queueCapacity)
+        {
+            List<Metric> metrics = new List<Metric>(9 + channelCount * 2 + queueCapacity);
+
+            metrics.Add(new Metric("1. Пропускная способность системы", "шт/ч", Formulas.SystemThroughput, MetricType.Float));
+            metrics.Add(new Metric("2. Вероятность обслуживания", "", Formulas.ServedProbality, MetricType.Probality));
+            metrics.Add(new Metric("3. Вероятность отказа", "", Formulas.RefuseProbality, MetricType.Probality));
+
+            for (int i = 1; i < channelCount + 1; i++)
+            {
+                int b = i;
+                metrics.Add(new Metric($"4.{ i }. Вероятность занятости только { i } каналов", "", diagram => Formulas.ChannelBusyProbality(diagram, b), MetricType.Probality));
+            }
+
+            metrics.Add(new Metric("5. Среднее количество занятых каналов", "", Formulas.AverageBusyChannelCount, MetricType.Float));
+
+            for (int i = 1; i < channelCount + 1; i++)
+            {
+                int b = i;
+                metrics.Add(new Metric($"6.{ i }. Вероятность простоя { i } и более каналов", "", diagram => Formulas.ChannelIdleProbality(diagram, b), MetricType.Probality));
+            }
+
+            for (int i = 1; i < queueCapacity + 1; i++)
+            {
+                int b = i;
+                metrics.Add(new Metric($"7.{ i }. Вероятность того, что в очереди будет одновременно { i } заявок", "", diagram => Formulas.QueueBusyProbality(diagram, b), MetricType.Probality));
+            }
+
+            metrics.Add(new Metric("8. Среднее количество заявок в очереди", "шт", Formulas.AverageClientCountInQueue, MetricType.Float));
+            metrics.Add(new Metric("9. Среднее время ожидания заявки в очереди", "", Formulas.AverageClientQueueWaitingTime, MetricType.Float));
+            metrics.Add(new Metric("10 .Среднее время обслуживания заявки", "часов", Formulas.AverageClientServiceTime, MetricType.Float));
+            metrics.Add(new Metric("11. Среднее время нахождения заявки в системе", "часов", Formulas.SummaryAverageClientTime, MetricType.Float));
+            metrics.Add(new Metric("12. Среднее количество заявок в системе", "шт", Formulas.AverageClientCount, MetricType.Float));
+
+            return metrics.ToArray();
+        }
 
         /// <summary>
         /// Создает новый экземпляр приложения для построения и анализа СМО.
@@ -78,7 +118,7 @@ namespace QTS.Core
             if (gradient == null)
                 return false;
 
-            if (gradient.MaxPlaceCount <= gradient.MinPlaceCount || gradient.MinPlaceCount < 0 || gradient.MaxPlaceCount < 0)
+            if (gradient.MaxQueueCapacity <= gradient.MinQueueCapacity || gradient.MinQueueCapacity < 0 || gradient.MaxQueueCapacity < 0)
             {
                 CallbackUi.ShowError("Синтез СМО", "Некорректные значения градиента КМО.");
                 return false;
@@ -138,6 +178,28 @@ namespace QTS.Core
         {
             ParametersContainer parameters = CallbackUi.GetDiagramParameters();
 
+
+            //QueuePlaceGradientData gradient = new QueuePlaceGradientData(2, 30);
+
+            //List<DiagramData> diagrams = new List<DiagramData>(gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
+
+            //for (parameters.QueueCapacity = gradient.MinQueueCapacity; parameters.QueueCapacity <= gradient.MaxQueueCapacity; parameters.QueueCapacity++)
+            //{
+            //    ProcessModeller mdl = new ProcessModeller(parameters);
+            //    diagrams.Add(mdl.CreateDiagram(GraphicsFactory));
+            //}
+
+            //var metrics = new Metric[]
+            //{
+            //    new Metric(Formulas.AverageBusyChannelCount, "Среднее колво занятых каналов", "", MetricType.Float)
+            //};
+
+            //var graphs = ReportTool.CreateGraphs(diagrams.ToArray(), metrics, gradient, GraphicsFactory);
+
+            //foreach (var graph in graphs)
+            //    graph.ExportToBitmap(true).Save(graph.Title + ".png");
+
+
             if (!CheckParametersValid(parameters))
                 return;
 
@@ -189,7 +251,27 @@ namespace QTS.Core
             }
 
             if (analyzeText.Length == 0)
-                analyzeText = Solver.GetDiagramAnalyzeText(diagram);
+            {
+                analyzeText = diagram.ReadonlyParameters.ToString() + "\r\n";
+
+                analyzeText += "Показатели системы:\r\n";
+
+                if (diagram.SystemWorkTime == 0 || diagram.SummaryClientCount == 0)
+                {
+                    analyzeText += "В процессе работы системы не поступило ни одной заявки! Анализ невозможен.";
+                }
+                else
+                {
+                    analyzeText += " 1. Количество заявок: " + diagram.SummaryClientCount + " шт\r\n";
+                    analyzeText += "   1.1 Из них обслужено: " + diagram.ServedClientCount + " шт\r\n";
+                    analyzeText += "   1.2 Из них утеряно: " + diagram.LostClientCount + " шт\r\n";
+
+                    analyzeText += " 2. Время работы системы: " + (float)diagram.SystemWorkTime + " часов\r\n\r\n";
+
+                    analyzeText += "Анализ диаграммы:\r\n" +
+                        string.Join("\r\n", GetMetrics(diagram.ChannelCount, diagram.QueueCapacity).Select(metric => string.Format(" {0}: {1} {2}", metric.Name, metric.Formula(diagram), metric.Units)));
+                }
+            }
 
             CallbackUi.ShowTextWindow("Анализ диаграммы", analyzeText);
         }
@@ -208,39 +290,34 @@ namespace QTS.Core
             string reportsFolder;
 
             if (!CheckParametersValid(parameters = CallbackUi.GetDiagramParameters()) ||
-                !CheckParametersValid(gradient = CallbackUi.GetQueuePlaceGradientData()) ||
-                (graphsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения графиков")) == "" ||
-                (reportsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения отчетов", graphsFolder)) == "")
+                !CheckParametersValid(gradient = CallbackUi.GetQueuePlaceGradientData()))
                 return;
 
-            var graphNames = Solver.GenerateGraphNames(parameters.ChannelCount, gradient.MaxPlaceCount);
+            graphsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения графиков");
 
-            int totalGraphCount = graphNames.Length;
+            if (graphsFolder == "")
+                CallbackUi.ShowWarning("Синтез СМО", "Графики не будут сохранены");
 
-            var graphs = new IGraph[totalGraphCount];
+            reportsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения отчетов", graphsFolder);
 
-            for (int i = 0; i < totalGraphCount; i++)
+            if(graphsFolder == "" && reportsFolder == "")
             {
-                var oxyGraph = GraphicsFactory.CreateEmptyGraph("Кол-во мест в очереди", graphNames[i]);
-
-                oxyGraph.Title = graphNames[i];
-                oxyGraph.BeginLine();
-
-                graphs[i] = oxyGraph;
+                CallbackUi.ShowWarning("Синтез СМО", "Отмена синтеза СМО");
+                return;
             }
 
-            bool noReportRights = false;
+            List<DiagramData> diagrams = new List<DiagramData>(gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
 
             //Меняем параметр "КМО".
-            for (parameters.QueueCapacity = gradient.MinPlaceCount; parameters.QueueCapacity <= gradient.MaxPlaceCount; parameters.QueueCapacity++)
+            for (parameters.QueueCapacity = gradient.MinQueueCapacity; parameters.QueueCapacity <= gradient.MaxQueueCapacity; parameters.QueueCapacity++)
             {
-                CallbackUi.ShowSynthesisStats(parameters.QueueCapacity - gradient.MinPlaceCount + 1, gradient.MaxPlaceCount - gradient.MinPlaceCount + 1);
-                DiagramData timeDiagram;
+                CallbackUi.ShowSynthesisStats(parameters.QueueCapacity - gradient.MinQueueCapacity + 1, gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
+
+                ProcessModeller modeller = new ProcessModeller(parameters);
 
                 try
                 {
-                    ProcessModeller modeller = new ProcessModeller(parameters);
-                    timeDiagram = modeller.CreateDiagram(GraphicsFactory);
+                    diagrams.Add(modeller.CreateDiagram(GraphicsFactory));
                 }
                 catch (Exception ex)
                 {
@@ -248,49 +325,23 @@ namespace QTS.Core
                     CallbackUi.ShowError("Ошибка вычислений", "При моделировании процесса возникло исключение:\n" + ex.Message);
                     return;
                 }
-
-                Solver.AddPointsToGraph(timeDiagram, parameters, graphs, gradient.MaxPlaceCount, parameters.QueueCapacity);
-
-                try
-                {
-                    File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + parameters.QueueCapacity + ".txt", Solver.GetDiagramAnalyzeText(timeDiagram));
-                }
-                catch
-                {
-                    noReportRights = true;
-                }
             }
 
             CallbackUi.CloseSynthesisStats();
 
-            bool noGraphRights = false;
+            var graphs = ReportTool.CreateGraphs(diagrams, GetMetrics(parameters.ChannelCount, gradient.MaxQueueCapacity), gradient, GraphicsFactory);
 
-            for (int i = 0; i < totalGraphCount; i++)
-            {
-                graphs[i].CompleteLine(false);
+            if(graphsFolder != "")
+                foreach(var graph in graphs)
+                    graph.ExportToBitmap(true).Save(graphsFolder + "/" + graph.Title + ".png");
 
-                var bitmap = graphs[i].ExportToBitmap(true);
+            if(reportsFolder != "")
+                foreach(var diagram in diagrams)
+                    File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + diagram.QueueCapacity + ".txt", ReportTool.MakeReport(diagram, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity)));
 
-                try
-                {
-                    bitmap.Save(graphsFolder + "/" + graphNames[i] + ".png");
-                }
-                catch
-                {
-                    noGraphRights = true;
-                }
-            }
-
-            if (noGraphRights)
-                CallbackUi.ShowWarning("", "Не удалось сохранить некоторые изображения графиков.\nВозможно, не достаточно прав для записи в выбранную папку.");
-
-            if (noReportRights)
-                CallbackUi.ShowWarning("", "Не удалось создать файлы отчетов.\nВозможно, не достаточно прав для записи в выбранную папку.");
-
-            if (!noGraphRights)
+            if(graphsFolder != "")
                 CallbackUi.StartExplorer(graphsFolder);
-
-            if (!noReportRights && reportsFolder != graphsFolder)
+            if (reportsFolder != "" && reportsFolder != graphsFolder)
                 CallbackUi.StartExplorer(reportsFolder);
 
         }

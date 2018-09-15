@@ -45,7 +45,7 @@ namespace QTS.OxyPlotGraphics
             graph.CurrentLine.MouseDown += OnMouseDown;
 
             AddAnnotation(y, x, VerticalAlignment.Top);
-            graph.CompleteLine();
+            graph.CompleteLine(true);
         }
 
         public override void PostProcessDiagram()

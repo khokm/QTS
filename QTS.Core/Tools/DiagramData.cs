@@ -3,12 +3,11 @@ using System.Linq;
 
 namespace QTS.Core
 {
-    public class DiagramData
+    class DiagramData
     {
         public bool Finished { get; private set; }
         //protected double FirstClientArrivalTime { get; private set; }
         public double SystemWorkTime { get; private set; }
-
 
         public double SummaryServiceTime { get; private set; }
 
@@ -18,36 +17,41 @@ namespace QTS.Core
 
         public int QueuedClientCount { get; set; }
 
-        public double[] QueueBusyTimes { get; }
+        public double AverageClientCount => (double)ClientAtTimeSum / SummaryClientCount;
+
+        public double[] ChannelBusyTimes { get; }
+
+        public double GetSummaryChannelBusyTime(int channelCount) => (channelCount > ChannelCount || channelCount < 0) ? 0 : ChannelBusyTimes[channelCount];
+
+        public double GetQueueBusyTime(int queueIndex) => (queueIndex >= QueueCapacity || queueIndex < 0) ? 0 : QueueBusyTimes[queueIndex];
+
+        public InteractiveDiagram InteractiveDiagram { get; }
+
+        public ParametersContainer ReadonlyParameters { get; }
+
+        public double[] QueueBusyTimes;
 
         double currentClientPosition;
         int currentClientIndex;
 
-        public InteractiveDiagram InteractiveDiagram { get; }
-
         double[] ChannelLeaveTime;
         double[] QueueLeaveTime;
-        public double[] ChannelBusyTimes;
+
 
         int ClientAtTimeSum;
-
-        public ParametersContainer ReadonlyParameters { get; }
-
-        public double AverageClientCount => (double)ClientAtTimeSum / SummaryClientCount;
 
         public int ChannelCount { get; }
 
         public int QueueCapacity { get; }
 
-        public double GetChannelsIntersectionLength(int channelCount)
-        {
-            if (channelCount == 0)
-                return SystemWorkTime - ChannelBusyTimes[1];
-            if (channelCount == ChannelCount)
-                return ChannelBusyTimes[channelCount];
+        //{
+        //    if (channelCount == ChannelCount)
+        //        return ChannelBusyTimes[channelCount];
+        //    if (channelCount == 0)
+        //        return SystemWorkTime - ChannelBusyTimes[1];
 
-            return ChannelBusyTimes[channelCount] - ChannelBusyTimes[channelCount + 1];
-        }
+        //    return ChannelBusyTimes[channelCount] - ChannelBusyTimes[channelCount + 1];
+        //}
 
         /// <summary>
         /// Создает пустую диаграмму.
@@ -222,6 +226,20 @@ namespace QTS.Core
         {
             if (Finished)
                 throw new Exception("Диаграмма уже построена");
+
+            //{
+            //    if (channelCount == ChannelCount)
+            //        return ChannelBusyTimes[channelCount];
+            //    if (channelCount == 0)
+            //        return SystemWorkTime - ChannelBusyTimes[1];
+
+            //    return ChannelBusyTimes[channelCount] - ChannelBusyTimes[channelCount + 1];
+            //}
+
+            ChannelBusyTimes[0] = SystemWorkTime - (ChannelCount == 0 ? 0 : ChannelBusyTimes[1]);
+
+            for (int i = 1; i < ChannelCount; i++)
+                ChannelBusyTimes[i] -= ChannelBusyTimes[i + 1];
 
             Finished = true;
             if(InteractiveDiagram != null)

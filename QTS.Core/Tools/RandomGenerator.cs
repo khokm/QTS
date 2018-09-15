@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace QTS.Core.Helpers
+namespace QTS.Core.Tools
 {
     /// <summary>
     /// Генератор случайных чисел

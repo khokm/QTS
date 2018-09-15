@@ -1,4 +1,4 @@
-﻿using QTS.Core.Helpers;
+﻿using QTS.Core.Tools;
 
 namespace QTS.Core.Tools
 {
@@ -7,22 +7,12 @@ namespace QTS.Core.Tools
     /// </summary>
     class ProcessModeller
     {
-        ParametersContainer Parameters { get; set; }
+        ParametersContainer Parameters { get; }
 
-        double[] channelIdleTimes { get; set; }
-        double[] queueIdleTimes { get; set; }
-
-        public ProcessModeller()
-        {
-
-        }
+        double[] channelIdleTimes { get; }
+        double[] queueIdleTimes { get; }
 
         public ProcessModeller(ParametersContainer parameters)
-        {
-            SetParameters(parameters);
-        }
-
-        public void SetParameters(ParametersContainer parameters)
         {
             Parameters = parameters;
             channelIdleTimes = new double[Parameters.ChannelCount];
