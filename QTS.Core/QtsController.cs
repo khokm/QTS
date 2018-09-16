@@ -20,6 +20,13 @@ namespace QTS.Core
         ICallbackUi CallbackUi { get; }
         IGraphicsFactory<InteractiveDiagram, IGraph> GraphicsFactory { get; }
 
+        static IEnumerable<Metric> clientMetrics = new[]
+        {
+            new Metric("1. Количество заявок", "шт", Formulas.SummaryClientCount, MetricType.Integer),
+            new Metric(" 1.1 Из них обслужено", "шт", Formulas.ServedClientCount, MetricType.Integer),
+            new Metric(" 1.2 Из них утеряно", "шт", Formulas.LostClientCount, MetricType.Integer),
+            new Metric("2. Время работы системы", "часов", Formulas.SystemWorkTime, MetricType.Float)
+        };
 
         static IEnumerable<Metric> GetMetrics(int channelCount, int queueCapacity)
         {
@@ -251,26 +258,7 @@ namespace QTS.Core
             }
 
             if (analyzeText.Length == 0)
-            {
-                analyzeText = diagram.ReadonlyParameters.ToString() + "\r\n";
-
-                analyzeText += "Показатели системы:\r\n";
-
-                if (diagram.SystemWorkTime == 0 || diagram.SummaryClientCount == 0)
-                {
-                    analyzeText += "В процессе работы системы не поступило ни одной заявки! Анализ невозможен.";
-                }
-                else
-                {
-                    analyzeText += " 1. Количество заявок: " + diagram.SummaryClientCount + " шт\r\n";
-                    analyzeText += "   1.1 Из них обслужено: " + diagram.ServedClientCount + " шт\r\n";
-                    analyzeText += "   1.2 Из них утеряно: " + diagram.LostClientCount + " шт\r\n";
-
-                    analyzeText += " 2. Время работы системы: " + (float)diagram.SystemWorkTime + " часов\r\n\r\n";
-
-                    analyzeText += ReportTool.MakeReport(diagram, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity));
-                }
-            }
+                analyzeText = ReportTool.MakeReport(diagram, clientMetrics, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity));
 
             CallbackUi.ShowTextWindow("Анализ диаграммы", analyzeText);
         }
@@ -336,7 +324,7 @@ namespace QTS.Core
 
             if(reportsFolder != "")
                 foreach(var diagram in diagrams)
-                    File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + diagram.QueueCapacity + ".txt", ReportTool.MakeReport(diagram, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity)));
+                    File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + diagram.QueueCapacity + ".txt", ReportTool.MakeReport(diagram, clientMetrics, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity)));
 
             if(graphsFolder != "")
                 CallbackUi.StartExplorer(graphsFolder);
