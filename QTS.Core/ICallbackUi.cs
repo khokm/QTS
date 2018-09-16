@@ -76,6 +76,8 @@
         /// <param name="message">Содержимое окна</param>
         void ShowWarning(string title, string message);
 
+        void CreateTextFile(string path, string text);
+
         void ShowSynthesisStats(int current, int all);
 
         void CloseSynthesisStats();

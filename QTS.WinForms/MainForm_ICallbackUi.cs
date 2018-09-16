@@ -95,6 +95,11 @@ namespace QTS.WinForms
             }
         }
 
+        public void CreateTextFile(string path, string text)
+        {
+            File.WriteAllText(path, text);
+        }
+
         public void ShowSynthesisStats(int current, int all)
         {
             statusText.Text = $"Моделирование процесса: {current} из {all}...";

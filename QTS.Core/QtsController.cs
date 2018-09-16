@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using QTS.Core.Tools;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace QTS.Core
 {
@@ -338,7 +336,7 @@ namespace QTS.Core
                 if (reportsFolder != "")
                 {
                     foreach (var diagram in diagrams)
-                        File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + diagram.QueueCapacity + ".txt", ReportTool.MakeReport(diagram, clientMetrics, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity)));
+                        CallbackUi.CreateTextFile(reportsFolder + "/Отчет для кол-ва мест " + diagram.QueueCapacity + ".txt", ReportTool.MakeReport(diagram, clientMetrics, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity)));
 
                     if (reportsFolder != graphsFolder)
                         CallbackUi.StartExplorer(reportsFolder);
