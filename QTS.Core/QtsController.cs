@@ -268,8 +268,7 @@ namespace QTS.Core
 
                     analyzeText += " 2. Время работы системы: " + (float)diagram.SystemWorkTime + " часов\r\n\r\n";
 
-                    analyzeText += "Анализ диаграммы:\r\n" +
-                        string.Join("\r\n", GetMetrics(diagram.ChannelCount, diagram.QueueCapacity).Select(metric => string.Format(" {0}: {1} {2}", metric.Name, metric.Formula(diagram), metric.Units)));
+                    analyzeText += ReportTool.MakeReport(diagram, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity));
                 }
             }
 
