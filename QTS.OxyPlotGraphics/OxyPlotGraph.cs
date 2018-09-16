@@ -127,7 +127,7 @@ namespace QTS.OxyPlotGraphics
             PlotModel.Series.Add(CurrentLine);
         }
 
-        public Bitmap ExportToBitmap(bool betterHeights)
+        public void ExportToBitmap(bool betterHeights, string path)
         {
             if(betterHeights)
             {
@@ -143,7 +143,7 @@ namespace QTS.OxyPlotGraphics
             PlotModel.Axes[0].Minimum = PlotModel.Series.Select(line => ((LineSeries)line).Points.Select(point => point.X)).Min().First();
 
             PngExporter exp = new PngExporter();
-            return exp.ExportToBitmap(PlotModel);
+            exp.ExportToBitmap(PlotModel).Save(path);
         }
     }
 }

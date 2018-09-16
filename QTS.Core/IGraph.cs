@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Drawing;
 
 namespace QTS.Core
 {
@@ -34,6 +33,6 @@ namespace QTS.Core
         /// Конвертирует график в PNG-изображение
         /// </summary>
         /// <returns></returns>
-        Bitmap ExportToBitmap(bool betterHieghts);
+        void ExportToBitmap(bool betterHieghts, string path);
     }
 }

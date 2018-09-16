@@ -320,7 +320,7 @@ namespace QTS.Core
 
             if(graphsFolder != "")
                 foreach(var graph in graphs)
-                    graph.ExportToBitmap(true).Save(graphsFolder + "/" + graph.Title + ".png");
+                    graph.ExportToBitmap(true, graphsFolder + "/" + graph.Title + ".png");
 
             if(reportsFolder != "")
                 foreach(var diagram in diagrams)
