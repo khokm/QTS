@@ -21,7 +21,7 @@ namespace QTS.Core
         IGraphicsFactory<InteractiveDiagram, IGraph> GraphicsFactory { get; }
 
 
-        static Metric[] GetMetrics(int channelCount, int queueCapacity)
+        static IEnumerable<Metric> GetMetrics(int channelCount, int queueCapacity)
         {
             List<Metric> metrics = new List<Metric>(9 + channelCount * 2 + queueCapacity);
 
@@ -55,7 +55,7 @@ namespace QTS.Core
             metrics.Add(new Metric("11. Среднее время нахождения заявки в системе", "часов", Formulas.SummaryAverageClientTime, MetricType.Float));
             metrics.Add(new Metric("12. Среднее количество заявок в системе", "шт", Formulas.AverageClientCount, MetricType.Float));
 
-            return metrics.ToArray();
+            return metrics;
         }
 
         /// <summary>
