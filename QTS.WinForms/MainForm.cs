@@ -32,6 +32,12 @@ namespace QTS.WinForms
             keyBinder.UnbindKeyDown(OxyKey.Right);
 
             plot1.Controller = keyBinder;
+
+            System.Globalization.CultureInfo myCulture =
+     (System.Globalization.CultureInfo)System.Threading.Thread.CurrentThread.CurrentCulture.Clone();
+            myCulture.NumberFormat.NaNSymbol = "Не определено";
+
+            System.Threading.Thread.CurrentThread.CurrentCulture = myCulture;
         }
 
         /// <summary>
