@@ -137,20 +137,30 @@ namespace QTS.Core.Tools
 
         void FillDiagram(DiagramData timeDiagram)
         {
+            double step = 0.5 / Parameters.ThreadIntencity;
+
+
             RandomGenerator rnd = new RandomGenerator(Parameters.MinRandomValue);
 
-            double workTime = 0;
+            double realTime = 0;
+            double fixedTime = 0;
 
             for (int i = 0; !Parameters.HasClientLimit || i < Parameters.ClientLimit; i++)
             {
                 double realRndValue;
                 double rndValue = rnd.Next(Parameters.ThreadIntencity, out realRndValue);
-                workTime += rndValue;
+                realTime += rndValue;
 
-                if (Parameters.HasTimeLimit && workTime > Parameters.TimeLimit)
+                while(fixedTime < realTime)
+                {
+                    timeDiagram.AddToClientSum(fixedTime);
+                    fixedTime += step;
+                }
+
+                if (Parameters.HasTimeLimit && realTime > Parameters.TimeLimit)
                     break;
 
-                PushClient(workTime, rnd, realRndValue, rndValue, timeDiagram);
+                PushClient(realTime, rnd, realRndValue, rndValue, timeDiagram);
             }
 
             timeDiagram.FinishDiagram();

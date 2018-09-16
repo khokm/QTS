@@ -17,7 +17,7 @@ namespace QTS.Core
 
         public int QueuedClientCount { get; set; }
 
-        public double AverageClientCount => (double)ClientAtTimeSum / SummaryClientCount;
+        public double AverageClientCount => (double)clientsAtTimeSum / checksSum;
 
         public double[] ChannelBusyTimes { get; }
 
@@ -37,8 +37,8 @@ namespace QTS.Core
         double[] ChannelLeaveTime;
         double[] QueueLeaveTime;
 
-
-        int ClientAtTimeSum;
+        int clientsAtTimeSum;
+        int checksSum;
 
         public int ChannelCount { get; }
 
@@ -74,6 +74,19 @@ namespace QTS.Core
             InteractiveDiagram = interactiveDiagram;
         }
 
+        public void AddToClientSum(double checkTime)
+        {
+            foreach (var time in ChannelLeaveTime)
+                if (time >= checkTime)
+                    clientsAtTimeSum++;
+
+            foreach (var time in QueueLeaveTime)
+                if (time >= checkTime)
+                    clientsAtTimeSum++;
+
+            checksSum++;
+        }
+
         public void PushStartPoint(double arrivalTime, double realRndValue, double rndValue)
         {
             if (Finished)
@@ -93,14 +106,6 @@ namespace QTS.Core
                 InteractiveDiagram.AddPathPoint(y, arrivalTime);
                 InteractiveDiagram.AddPathMetadata(metadata);
             }
-
-            foreach (var time in ChannelLeaveTime)
-                if (time >= arrivalTime)
-                    ClientAtTimeSum++;
-
-            foreach (var time in QueueLeaveTime)
-                if (time >= arrivalTime)
-                    ClientAtTimeSum++;
         }
 
         public void PushChannelLine(int channelIndex, double serviceTime, double realRndValue)
