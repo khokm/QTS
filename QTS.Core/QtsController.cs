@@ -318,18 +318,37 @@ namespace QTS.Core
 
             var graphs = ReportTool.CreateGraphs(diagrams, GetMetrics(parameters.ChannelCount, gradient.MaxQueueCapacity), gradient, GraphicsFactory);
 
-            if(graphsFolder != "")
-                foreach(var graph in graphs)
-                    graph.ExportToBitmap(true, graphsFolder + "/" + graph.Title + ".png");
+            try
+            {
+                if (graphsFolder != "")
+                {
+                    foreach (var graph in graphs)
+                        graph.ExportToBitmap(true, graphsFolder + "/" + graph.Title + ".png");
 
-            if(reportsFolder != "")
-                foreach(var diagram in diagrams)
-                    File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + diagram.QueueCapacity + ".txt", ReportTool.MakeReport(diagram, clientMetrics, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity)));
+                    CallbackUi.StartExplorer(graphsFolder);
+                }
+            }
+            catch
+            {
+                CallbackUi.ShowError("Синтез СМО", "Недостаточно прав для записи в " + graphsFolder);
+            }
 
-            if(graphsFolder != "")
-                CallbackUi.StartExplorer(graphsFolder);
-            if (reportsFolder != "" && reportsFolder != graphsFolder)
-                CallbackUi.StartExplorer(reportsFolder);
+            try
+            {
+                if (reportsFolder != "")
+                {
+                    foreach (var diagram in diagrams)
+                        File.WriteAllText(reportsFolder + "/Отчет для кол-ва мест " + diagram.QueueCapacity + ".txt", ReportTool.MakeReport(diagram, clientMetrics, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity)));
+
+                    if (reportsFolder != graphsFolder)
+                        CallbackUi.StartExplorer(reportsFolder);
+                }
+            }
+            catch
+            {
+                CallbackUi.ShowError("Синтез СМО", "Недостаточно прав для записи в " + reportsFolder);
+            }
+
 
         }
         #endregion
