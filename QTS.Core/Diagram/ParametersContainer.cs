@@ -1,23 +1,53 @@
 ﻿using System;
 
-namespace QTS.Core
+namespace QTS.Core.Diagram
 {
     /// <summary>
-    /// Контейнер параметров для построения временной диграммы.
+    /// Представляет набор параметров системы.
     /// </summary>
     [Serializable]
     public class ParametersContainer
     {
+        /// <summary>
+        /// Интенсивность потока заявок.
+        /// </summary>
         public int ThreadIntencity { get; set; }
+        /// <summary>
+        /// Количество стояночных мест.
+        /// </summary>
         public int QueueCapacity { get; set; }
+        /// <summary>
+        /// Минимальное значение, выдаваемое ГСЧ.
+        /// </summary>
         public double MinRandomValue { get; set; }
+        /// <summary>
+        /// Использует ли диаграмма ограничение по времени?
+        /// </summary>
         public bool HasTimeLimit { get; set; }
+        /// <summary>
+        /// Ограничение по времени.
+        /// </summary>
         public double TimeLimit { get; set; }
+        /// <summary>
+        /// Использует ли диаграмма ограничение по количеству заявок?
+        /// </summary>
         public bool HasClientLimit { get; set; }
+        /// <summary>
+        /// Ограничение по количеству заявок.
+        /// </summary>
         public int ClientLimit { get; set; }
+        /// <summary>
+        /// Предпочитать первый канал?
+        /// </summary>
         public bool PreferFirstChannel { get; set; }
+        /// <summary>
+        /// Пропускная способность (I) канала, где I = <see cref="ChannelsIntencites"/>[номер канала - 1].
+        /// </summary>
         public int[] ChannelsIntencites { get; set; }
 
+        /// <summary>
+        /// Количество каналов в системе.
+        /// </summary>
         public int ChannelCount => ChannelsIntencites.Length;
 
         /// <summary>
@@ -31,12 +61,7 @@ namespace QTS.Core
         /// <param name="hasClientLimit">Использует ли диаграмма ограничение по количеству заявок?</param>
         /// <param name="clientLimit">Ограничение по количеству заявок</param>
         /// <param name="preferFirstChannel">Предпочитать первый канал?</param>
-        /// <param name="channelsIntencies">Массив пропускных способностей каналов</param>
-        public ParametersContainer()
-        {
-
-        }
-
+        /// <param name="channelsIntencies">Пропускная способность (I) канала, где I = <see cref="channelsIntencies"/>[номер канала - 1].</param>
         public ParametersContainer(int threadIntencity, int queueCapacity,
             double minRandomValue, bool hasTimeLimit,
             double timeLimit, bool hasClientLimit,
@@ -53,6 +78,10 @@ namespace QTS.Core
             ChannelsIntencites = channelsIntencies;
         }
 
+        /// <summary>
+        /// Переводит набор параметров в строковый вид, пригодный для чтения.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             string text = "Параметры системы:\r\n";

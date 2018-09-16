@@ -1,4 +1,6 @@
-﻿using QTS.Core.Tools;
+﻿using QTS.Core.Graphics;
+using QTS.Core.Diagram;
+using System.Collections.Generic;
 
 namespace QTS.Core.Tools
 {
@@ -76,7 +78,7 @@ namespace QTS.Core.Tools
         /// <param name="channelIndex">Индекс используемого места обслуживания.</param>
         /// <param name="arrivalTime">Время начала обслуживания.</param>
         /// <param name="rnd">Используемый ГСЧ</param>
-        void CreateChannelLine(int channelIndex, double arrivalTime, RandomGenerator rnd, DiagramData timeDiagram)
+        void CreateChannelLine(int channelIndex, double arrivalTime, RandomGenerator rnd, TimeDiagram timeDiagram)
         {
             double realRndValue;
             double clientSerivceTime = rnd.Next(Parameters.ChannelsIntencites[channelIndex], out realRndValue);
@@ -94,9 +96,9 @@ namespace QTS.Core.Tools
         /// </summary>
         /// <param name="arrivalTime">Время прибытия заявки</param>
         /// <param name="rnd">Импользуемый ГСЧ</param>
-        void PushClient(double arrivalTime, RandomGenerator rnd, double realRndValue, double rndValue, DiagramData timeDiagram)
+        void PushClient(double arrivalTime, RandomGenerator rnd, double realRndValue, double interval, TimeDiagram timeDiagram)
         {
-            timeDiagram.PushStartPoint(arrivalTime, realRndValue, rndValue);
+            timeDiagram.PushStartPoint(arrivalTime, realRndValue, interval);
 
             int usingChannel = GetNextPossibleChannel(arrivalTime);
 
@@ -135,7 +137,7 @@ namespace QTS.Core.Tools
             CreateChannelLine(usingChannel, queueIdleTimes[0], rnd, timeDiagram);
         }
 
-        void FillDiagram(DiagramData timeDiagram)
+        void FillDiagram(TimeDiagram timeDiagram)
         {
             double step = 0.5 / Parameters.ThreadIntencity;
 
@@ -151,9 +153,9 @@ namespace QTS.Core.Tools
                 double rndValue = rnd.Next(Parameters.ThreadIntencity, out realRndValue);
                 realTime += rndValue;
 
-                while(fixedTime < realTime)
+                while (fixedTime < realTime)
                 {
-                    timeDiagram.AddToClientSum(fixedTime);
+                    timeDiagram.CheckClientCountAtTime(fixedTime);
                     fixedTime += step;
                 }
 
@@ -166,22 +168,37 @@ namespace QTS.Core.Tools
             timeDiagram.FinishDiagram();
         }
 
-        public DiagramData CreateDiagram()
+        public TimeDiagram CreateDiagram()
         {
-            var diagram = new DiagramData(Parameters, null);
+            var diagram = new TimeDiagram(Parameters.ChannelCount, Parameters.QueueCapacity);
 
             FillDiagram(diagram);
 
             return diagram;
         }
 
-        public DiagramData CreateDiagram<T>(IGraphicsFactory<T, IGraph> factory) where T : InteractiveDiagram
+        public TimeDiagram CreateDiagram<T>(IGraphicsFactory<T, IGraph> factory, out InteractiveDiagram interactiveDiagram) where T : InteractiveDiagram
         {
-            T interactiveDiagram = factory.CreateEmptyDiagram(Parameters.ChannelCount, Parameters.QueueCapacity);
+            List<string> labels = new List<string>(Parameters.ChannelCount + Parameters.QueueCapacity + 3);
 
-            DiagramData diagram = new DiagramData(Parameters, interactiveDiagram);
+            labels.Add("Заявки");
+
+            for (int i = 0; i < Parameters.ChannelCount; i++)
+                labels.Add($"Канал { Parameters.ChannelCount - i }");
+
+            for (int i = 0; i < Parameters.QueueCapacity; i++)
+                labels.Add($"Место { Parameters.QueueCapacity - i }");
+
+            labels.Add("Обслужено");
+            labels.Add("Отказ");
+
+            T idg = factory.CreateEmptyDiagram(labels);
+
+            TimeDiagram diagram = new TimeDiagram(Parameters.ChannelCount, Parameters.QueueCapacity, idg);
 
             FillDiagram(diagram);
+
+            interactiveDiagram = idg;
 
             return diagram;
         }

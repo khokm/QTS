@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
-using QTS.Core;
+using QTS.Core.Diagram;
 
 namespace QTS.WinForms
 {

@@ -1,25 +1,22 @@
-﻿using System.Drawing;
-using OxyPlot;
+﻿using OxyPlot;
 using OxyPlot.Series;
 using OxyPlot.WindowsForms;
-using QTS.Core;
 using OxyPlot.Axes;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using QTS.Core.Graphics;
+using OxyPlot.Annotations;
 
 namespace QTS.OxyPlotGraphics
 {
     /// <summary>
     /// Реализация графика с использованием библиотеки OxyPlot.
     /// </summary>
-    public class OxyPlotGraph : IGraph
+    public class OxyPlotGraph : InteractiveDiagram
     {
-        /// <summary>
-        /// 
-        /// </summary>
         public PlotModel PlotModel { get; }
-        public LineSeries CurrentLine { get; private set; }
+        LineSeries currentLine;
 
         static int _currentColorIndex = 0;
         static List<OxyColor> DefaultColors = new List<OxyColor>()
@@ -37,7 +34,7 @@ namespace QTS.OxyPlotGraphics
                  OxyColors.Violet
         };
 
-        public string Title
+        public override string Title
         {
             get
             {
@@ -50,34 +47,52 @@ namespace QTS.OxyPlotGraphics
             }
         }
 
-        public OxyPlotGraph(string XAxis = "", string YAxis = "")
+        public OxyPlotGraph(string XAxisTitle, string YAxisTitle, double minimumX, double minimumXRange, double minimumMajorStep, double minimumMinorStep, IEnumerable<string> yLabels)
         {
             PlotModel = new PlotModel()
             {
                 IsLegendVisible = false,
             };
 
-            if (XAxis != "")
+            var xAxis = new LinearAxis()
             {
-                var xAxis = new LinearAxis()
+                Position = AxisPosition.Bottom,
+                AbsoluteMinimum = minimumX,
+                Minimum = 0,
+                MinimumRange = minimumXRange,
+                MinimumMinorStep = minimumMinorStep,
+                MinimumMajorStep = minimumMajorStep,
+                MajorGridlineStyle = LineStyle.Solid,
+                //MaximumRange = 1,
+                Title = XAxisTitle
+            };
+
+            Axis yAxis;
+
+            if (yLabels != null)
+            {
+                var ax = new CategoryAxis()
                 {
-                    Position = AxisPosition.Bottom,
-                    AbsoluteMinimum = 0,
-                    Minimum = 0,
-                    MinimumRange = 1,
-                    MinimumMinorStep = 1,
-                    MinimumMajorStep = 1,
-                    MajorGridlineStyle = LineStyle.Solid,
-                    //MaximumRange = 1,
-                    Title = XAxis
+                    Position = AxisPosition.Left,
+                    //Делаем горизонтальные линии пунктирными
+                    MajorGridlineStyle = LineStyle.Dot,
+                    MinorGridlineStyle = LineStyle.Dot,
+
+                    //Делаем так, чтобы боковые подписи были напротив линий
+                    IsTickCentered = true,
                 };
 
-                PlotModel.Axes.Insert(0, xAxis);
-            }
+                foreach (var label in yLabels.Reverse())
+                    ax.ActualLabels.Add(label);
 
-            if (YAxis != "")
+                ax.MaximumRange = ax.ActualLabels.Count * 2;
+                ax.MinimumRange = Math.Min(10, ax.MaximumRange);
+
+                yAxis = ax;
+            }
+            else
             {
-                var yAxis = new LinearAxis()
+                yAxis = new LinearAxis()
                 {
                     Position = AxisPosition.Left,
                     AbsoluteMinimum = 0,
@@ -88,46 +103,79 @@ namespace QTS.OxyPlotGraphics
                     //Title = YAxis
                 };
 
-                Title = YAxis;
-                PlotModel.Axes.Insert(1, yAxis);
+                Title = YAxisTitle;
+
             }
 
+            PlotModel.Axes.Insert(0, xAxis);
+            PlotModel.Axes.Insert(1, yAxis);
         }
 
-        public OxyPlotGraph(int minX, IEnumerable<double> yValues, string xAxis, string yAxis) : this(xAxis, yAxis)
+        public OxyPlotGraph(int minX, IEnumerable<double> yValues, string XAxisTitle, string YAxisTitle, double minimumX, double minimumMajorStep, double minimumMinorStep, double minimumXRange, IEnumerable<string> yLabels) : 
+            this(XAxisTitle, YAxisTitle, minimumX, minimumXRange, minimumMajorStep, minimumMinorStep, yLabels)
         {
-            AddPoints(yValues, minX);
+            CreateLineByPoints(yValues, minX);
         }
 
-        public void AddPoints(IEnumerable<double> yValues, double minX)
+        public override void CreateLineByPoints(IEnumerable<double> yValues, double minX)
         {
             BeginLine();
-            CurrentLine.Points.AddRange(yValues.Select(value => new DataPoint(minX++, value)));
+            currentLine.Points.AddRange(yValues.Select(value => new DataPoint(minX++, value)));
             CompleteLine();
         }
 
-        public void AddPoint(double y, double x)
+        public override void AddPoint(double y, double x)
         {
-            CurrentLine.Points.Add(new DataPoint(x, y));
+            currentLine.Points.Add(new DataPoint(x, y));
         }
 
-        public void BeginLine()
+        protected override void CreateLine()
         {
-            CurrentLine = new LineSeries()
+            currentLine = new LineSeries()
             {
                 LineStyle = LineStyle.Solid
             };
-            CurrentLine.TrackerFormatString = "";
+            currentLine.TrackerFormatString = "";
         }
 
-        public void CompleteLine(bool randomColor = false)
+        protected override void MakeLineInteractive(object lineKey, Action<object> onMouseDown)
+        {
+            currentLine.Tag = lineKey;
+            currentLine.MouseDown += (object sender, OxyMouseDownEventArgs e) => { if(e.IsControlDown) onMouseDown(((LineSeries)sender).Tag); };
+        }
+
+        PointAnnotation CreateAnnotation(double y, double x, string annotation, bool atTop)
+        {
+            var pointAnnotation1 = new PointAnnotation()
+            {
+                X = x,
+                Y = y,
+                Text = annotation,
+                TextVerticalAlignment = atTop ? VerticalAlignment.Bottom : VerticalAlignment.Top
+            };
+            PlotModel.Annotations.Add(pointAnnotation1);
+
+            return pointAnnotation1;
+        }
+
+        public override void AddAnnotation(double y, double x, string annotation, bool atTop) => CreateAnnotation(y, x, annotation, atTop);
+
+        protected override void CreateInteractiveAnnotation(double y, double x, string annotation, bool atTop, object annotationKey, Action<object> onMouseDown)
+        {
+            var point = CreateAnnotation(y, x, annotation, atTop);
+
+            point.Tag = annotationKey;
+            point.MouseDown += (object sender, OxyMouseDownEventArgs e) => { if (e.IsControlDown) onMouseDown(((PointAnnotation)sender).Tag); };
+        }
+
+        public override void CompleteLine(bool randomColor = false)
         {
             if(randomColor)
-                CurrentLine.Color = DefaultColors[_currentColorIndex++ % DefaultColors.Count];
-            PlotModel.Series.Add(CurrentLine);
+                currentLine.Color = DefaultColors[_currentColorIndex++ % DefaultColors.Count];
+            PlotModel.Series.Add(currentLine);
         }
 
-        public void ExportToBitmap(bool betterHeights, string path)
+        public override void ExportToBitmap(bool betterHeights, string path)
         {
             if(betterHeights)
             {
@@ -144,6 +192,24 @@ namespace QTS.OxyPlotGraphics
 
             PngExporter exp = new PngExporter();
             exp.ExportToBitmap(PlotModel).Save(path);
+        }
+
+        public override void AddLineMetadata(string metadata) => currentLine.TrackerFormatString += metadata;
+
+        public override void UpdateView(int visibleLineIndex)
+        {
+            var series = PlotModel.Series;
+
+            if (ShowPreviousLines)
+            {
+                for (int i = 0; i < series.Count; i++)
+                    series[i].IsVisible = i <= visibleLineIndex;
+            }
+            else
+            {
+                for (int i = 0; i < series.Count; i++)
+                    series[i].IsVisible = i == visibleLineIndex;
+            }
         }
     }
 }

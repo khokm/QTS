@@ -1,4 +1,7 @@
-﻿namespace QTS.Core
+﻿using QTS.Core.Graphics;
+using QTS.Core.Diagram;
+
+namespace QTS.Core
 {
     /// <summary>
     /// Пользовательский интерфейс (например, CLI или GUI) для обратной связи.
@@ -11,16 +14,7 @@
         /// </summary>
         void InvalidateDiagramView();
 
-        /// <summary>
-        /// Устанавливает диаграмму, которая должна быть отображена в главном окне.
-        /// </summary>
-        /// <param name="diagram">Отображаемая диаграмма</param>
-        void SetDiagramView(InteractiveDiagram diagram);
-
-        /// <summary>
-        /// Выключает отображение диаграммы в главном окне.
-        /// </summary>
-        void RemoveDiagramView();
+        InteractiveDiagram InteractiveDiagram { get; set; }
 
         /// <summary>
         /// Получает параметры для построения диаграммы.
@@ -78,8 +72,8 @@
 
         void CreateTextFile(string path, string text);
 
-        void ShowSynthesisStats(int current, int all);
+        void ShowProgressWindow(string description);
 
-        void CloseSynthesisStats();
+        void CloseProgressWindow();
     }
 }

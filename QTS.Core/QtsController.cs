@@ -1,5 +1,7 @@
-﻿using System;
-using QTS.Core.Tools;
+﻿using QTS.Core.Tools;
+using QTS.Core.Graphics;
+using QTS.Core.Diagram;
+
 using System.Collections.Generic;
 
 namespace QTS.Core
@@ -11,8 +13,6 @@ namespace QTS.Core
     /// </summary>
     public class QtsController
     {
-        InteractiveDiagram diagramViewController = null;
-        DiagramData diagram = null;
         string analyzeText = "";
 
         ICallbackUi CallbackUi { get; }
@@ -22,7 +22,7 @@ namespace QTS.Core
         {
             new Metric("1. Количество заявок", "шт", Formulas.SummaryClientCount, MetricType.Integer),
             new Metric(" 1.1 Из них обслужено", "шт", Formulas.ServedClientCount, MetricType.Integer),
-            new Metric(" 1.2 Из них утеряно", "шт", Formulas.LostClientCount, MetricType.Integer),
+            new Metric(" 1.2 Из них отказано", "шт", Formulas.LostClientCount, MetricType.Integer),
             new Metric("2. Время работы системы", "часов", Formulas.SystemWorkTime, MetricType.Float)
         };
 
@@ -75,17 +75,6 @@ namespace QTS.Core
         }
 
         /// <summary>
-        /// Удаляет текущую используемую диаграмму.
-        /// </summary>
-        void RemoveCurrentDiagram()
-        {
-            diagramViewController = null;
-            diagram = null;
-            analyzeText = "";
-            CallbackUi.RemoveDiagramView();
-        }
-
-        /// <summary>
         /// Проверяет корректность введенных параметров.
         /// </summary>
         /// <param name="parameters">Параметры для построения диаграммы, которые нужно проверить на правильность.</param>
@@ -132,47 +121,10 @@ namespace QTS.Core
             return true;
         }
 
-        #region Вызовы управления отображением диаграммы
-        public void GoToDiagramStart()
+        static string MakeReport(ParametersContainer diagramParameters, TimeDiagram timeDiagram)
         {
-            if (diagramViewController == null)
-                return;
-
-            diagramViewController.GoToStart();
+            return diagramParameters.ToString() + "\r\n" + ReportTool.MakeReport(timeDiagram, clientMetrics, GetMetrics(timeDiagram.ChannelCount, timeDiagram.QueueCapacity));
         }
-
-        public void GoToDiagramEnd()
-        {
-            if (diagramViewController == null)
-                return;
-
-            diagramViewController.GoToEnd();
-        }
-
-        public void GoToDiagramNext()
-        {
-            if (diagramViewController == null)
-                return;
-
-            diagramViewController.StepForward();
-        }
-
-        public void GoToDiagramPrev()
-        {
-            if (diagramViewController == null)
-                return;
-
-            diagramViewController.StepBack();
-        }
-
-        public void ShowPreviousLines(bool show)
-        {
-            if (diagramViewController == null)
-                return;
-
-            diagramViewController.ShowPreviousLines = show;
-        }
-        #endregion
 
         #region Вызовы построения и анализа диаграммы и синтеза СМО.
         /// <summary>
@@ -208,9 +160,7 @@ namespace QTS.Core
             if (!CheckParametersValid(parameters))
                 return;
 
-            RemoveCurrentDiagram();
-
-            DiagramData timeDiagram;
+            TimeDiagram timeDiagram;
 
             bool useGraphics = true;
 
@@ -222,25 +172,26 @@ namespace QTS.Core
 
             ProcessModeller modeller = new ProcessModeller(parameters);
 
+            InteractiveDiagram intDiag = null;
+
             try
             {
-                timeDiagram = useGraphics ? modeller.CreateDiagram(GraphicsFactory) : modeller.CreateDiagram();
+                timeDiagram = useGraphics ? modeller.CreateDiagram(GraphicsFactory, out intDiag) : modeller.CreateDiagram();
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                CallbackUi.ShowError("Ошибка вычислений", "При моделировании процесса возникло исключение:\n" + ex.Message);
+                CallbackUi.ShowError("Создать диаграмму", "При моделировании процесса возникло исключение." + ex.StackTrace);
                 return;
             }
 
-            //Сохраним ссылку на диаграмму, чтобы позже по команде пользователя провести ее анализ.
-            diagram = timeDiagram;
+            CallbackUi.InteractiveDiagram = intDiag;
 
-            if (useGraphics)
+            analyzeText = MakeReport(parameters, timeDiagram);
+
+            if (intDiag != null)
             {
-                CallbackUi.SetDiagramView(timeDiagram.InteractiveDiagram);
-                diagramViewController = timeDiagram.InteractiveDiagram;
-                diagramViewController.ViewUpdated += CallbackUi.InvalidateDiagramView;
-                diagramViewController.GoToEnd();
+                intDiag.ViewUpdated += CallbackUi.InvalidateDiagramView;
+                intDiag.GoToEnd();
             }
         }
 
@@ -249,14 +200,11 @@ namespace QTS.Core
         /// </summary>
         public void MakeDiagramAnalyze()
         {
-            if (diagram == null)
+            if (analyzeText == "")
             {
                 CallbackUi.ShowError("Анализ диаграммы", "Диаграмма еще не создана.");
                 return;
             }
-
-            if (analyzeText.Length == 0)
-                analyzeText = ReportTool.MakeReport(diagram, clientMetrics, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity));
 
             CallbackUi.ShowTextWindow("Анализ диаграммы", analyzeText);
         }
@@ -291,28 +239,28 @@ namespace QTS.Core
                 return;
             }
 
-            List<DiagramData> diagrams = new List<DiagramData>(gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
+            List<TimeDiagram> diagrams = new List<TimeDiagram>(gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
 
             //Меняем параметр "КМО".
             for (parameters.QueueCapacity = gradient.MinQueueCapacity; parameters.QueueCapacity <= gradient.MaxQueueCapacity; parameters.QueueCapacity++)
             {
-                CallbackUi.ShowSynthesisStats(parameters.QueueCapacity - gradient.MinQueueCapacity + 1, gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
+                CallbackUi.ShowProgressWindow($"Моделирование процесса: {parameters.QueueCapacity - gradient.MinQueueCapacity + 1} из {gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1}...");
 
                 ProcessModeller modeller = new ProcessModeller(parameters);
 
                 try
                 {
-                    diagrams.Add(modeller.CreateDiagram(GraphicsFactory));
+                    diagrams.Add(modeller.CreateDiagram());
                 }
-                catch (Exception ex)
+                catch/* (Exception ex)*/
                 {
-                    CallbackUi.CloseSynthesisStats();
-                    CallbackUi.ShowError("Ошибка вычислений", "При моделировании процесса возникло исключение:\n" + ex.Message);
+                    CallbackUi.CloseProgressWindow();
+                    CallbackUi.ShowError("Синтез СМО", "При моделировании процесса возникло исключение."/* + ex.Message*/);
                     return;
                 }
             }
 
-            CallbackUi.CloseSynthesisStats();
+            CallbackUi.CloseProgressWindow();
 
             var graphs = ReportTool.CreateGraphs(diagrams, GetMetrics(parameters.ChannelCount, gradient.MaxQueueCapacity), gradient, GraphicsFactory);
 
@@ -336,7 +284,7 @@ namespace QTS.Core
                 if (reportsFolder != "")
                 {
                     foreach (var diagram in diagrams)
-                        CallbackUi.CreateTextFile(reportsFolder + "/Отчет для кол-ва мест " + diagram.QueueCapacity + ".txt", ReportTool.MakeReport(diagram, clientMetrics, GetMetrics(diagram.ChannelCount, diagram.QueueCapacity)));
+                        CallbackUi.CreateTextFile(reportsFolder + "/Отчет для кол-ва мест " + diagram.QueueCapacity + ".txt", MakeReport(parameters, diagram));
 
                     if (reportsFolder != graphsFolder)
                         CallbackUi.StartExplorer(reportsFolder);
@@ -346,7 +294,6 @@ namespace QTS.Core
             {
                 CallbackUi.ShowError("Синтез СМО", "Недостаточно прав для записи в " + reportsFolder);
             }
-
 
         }
         #endregion

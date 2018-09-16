@@ -1,9 +1,13 @@
-﻿using System.Windows.Forms;
-using QTS.Core;
-using QTS.OxyPlotGraphics;
+﻿using System;
+using System.Windows.Forms;
 using System.Diagnostics;
-using System;
 using System.IO;
+
+using QTS.Core;
+using QTS.Core.Graphics;
+using QTS.Core.Diagram;
+
+using QTS.OxyPlotGraphics;
 
 namespace QTS.WinForms
 {
@@ -13,24 +17,49 @@ namespace QTS.WinForms
 
     partial class MainForm : ICallbackUi
     {
+        InteractiveDiagram diagram;
+
+        public InteractiveDiagram InteractiveDiagram
+        {
+            get
+            {
+                return diagram;
+            }
+
+            set
+            {
+                showPrevLines_CheckBox.Checked = true;
+
+                plot1.Model = (value as OxyPlotGraph)?.PlotModel;
+                diagram = value;
+            }
+        }
+
         public void InvalidateDiagramView() => plot1.InvalidatePlot(false);
 
         public ParametersContainer GetDiagramParameters() => ParseDiagramParameters();
 
-        public void SetDiagramView(InteractiveDiagram diagram)
-        {
-            plot1.Model = (diagram as OxyPlotDiagram)?.plotModel;
-        }
+        public bool YesNoDialog(string title, string message) => MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
 
-        public void RemoveDiagramView()
-        {
-            plot1.Model = null;
-            showPrevLines_CheckBox.Checked = true;
-        }
+        public void StartExplorer(string path) => Process.Start(path);
 
-        public bool YesNoDialog(string title, string message)
+        public void ShowTextWindow(string title, string text) => new TextWindow(text).Show();
+
+        public void ShowError(string title, string message) => MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+        public void ShowWarning(string title, string message) => MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+        public void CreateTextFile(string path, string text) => File.WriteAllText(path, text);
+
+        public QueuePlaceGradientData GetQueuePlaceGradientData()
         {
-            return MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
+            using (var form = new EnterServicePlaceCountForm() { StartPosition = FormStartPosition.CenterParent })
+            {
+                if (form.ShowDialog(this) != DialogResult.OK)
+                    return null;
+
+                return form.gradientData;
+            }
         }
 
         public string GetFolderPath(string description, string defaultFolder)
@@ -64,45 +93,9 @@ namespace QTS.WinForms
             return "";
         }
 
-        public void StartExplorer(string path)
+        public void ShowProgressWindow(string description)
         {
-            Process.Start(path);
-        }
-
-        public void ShowTextWindow(string title, string text)
-        {
-            new TextWindow(text).Show();
-        }
-
-        public void ShowError(string title, string message)
-        {
-            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-
-        public void ShowWarning(string title, string message)
-        {
-            MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        }
-
-        public QueuePlaceGradientData GetQueuePlaceGradientData()
-        {
-            using (var form = new EnterServicePlaceCountForm() { StartPosition = FormStartPosition.CenterParent })
-            {
-                if (form.ShowDialog(this) != DialogResult.OK)
-                    return null;
-
-                return form.gradientData;
-            }
-        }
-
-        public void CreateTextFile(string path, string text)
-        {
-            File.WriteAllText(path, text);
-        }
-
-        public void ShowSynthesisStats(int current, int all)
-        {
-            statusText.Text = $"Моделирование процесса: {current} из {all}...";
+            statusText.Text = description;
 
             if (!statusText.Visible)
             {
@@ -115,7 +108,7 @@ namespace QTS.WinForms
             Application.DoEvents();
         }
 
-        public void CloseSynthesisStats()
+        public void CloseProgressWindow()
         {
             statusText.Visible = false;
             Enabled = true;

@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Windows.Forms;
 using System.Collections.Generic;
-using OxyPlot;
-using QTS.Core;
-using QTS.OxyPlotGraphics;
 using System.IO;
 using System.Xml.Serialization;
+
+using OxyPlot;
+
+using QTS.Core;
+using QTS.Core.Diagram;
+
+using QTS.OxyPlotGraphics;
 
 namespace QTS.WinForms
 {
@@ -142,7 +146,7 @@ namespace QTS.WinForms
                     AddChannelIntencity(valueForm.Value);
                     if (showNotify)
                     {
-                        ShowWarning("Подсказка", "Для редактирования интенсивности канала используйте двойной клик мышью.");
+                        ShowWarning("Подсказка", "Для редактирования пропускной способности канала используйте двойной клик мышью.");
                         showNotify = false;
                     }
                 }
@@ -205,15 +209,19 @@ namespace QTS.WinForms
         #endregion
 
         #region Обработчики кнопок верхней панели (управление отображением диаграммы)
-        private void toStart_Button_Click(object sender, EventArgs e) => controller.GoToDiagramStart();
+        private void toStart_Button_Click(object sender, EventArgs e) => InteractiveDiagram?.GoToStart();
 
-        private void stepBack_Button_Click(object sender, EventArgs e) => controller.GoToDiagramPrev();
+        private void stepBack_Button_Click(object sender, EventArgs e) => InteractiveDiagram?.StepBack();
 
-        private void stepForward_Button_Click(object sender, EventArgs e) => controller.GoToDiagramNext();
+        private void stepForward_Button_Click(object sender, EventArgs e) => InteractiveDiagram?.StepForward();
 
-        private void toEnd_Button_Click(object sender, EventArgs e) => controller.GoToDiagramEnd();
+        private void toEnd_Button_Click(object sender, EventArgs e) => InteractiveDiagram?.GoToEnd();
 
-        private void showPrevLines_CheckBox_CheckedChanged(object sender, EventArgs e) => controller.ShowPreviousLines(showPrevLines_CheckBox.Checked);
+        private void showPrevLines_CheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            if(InteractiveDiagram != null)
+                InteractiveDiagram.ShowPreviousLines = showPrevLines_CheckBox.Checked;
+        }
         #endregion
 
         #region Обработчики кнопок меню
