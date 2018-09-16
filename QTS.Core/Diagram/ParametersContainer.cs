@@ -50,6 +50,11 @@ namespace QTS.Core.Diagram
         /// </summary>
         public int ChannelCount => ChannelsIntencites.Length;
 
+        ParametersContainer()
+        {
+
+        }
+
         /// <summary>
         /// Создает новый контейнер параметров.
         /// </summary>
