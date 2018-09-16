@@ -4,6 +4,25 @@ namespace QTS.Core.Tools
 {
     static class Formulas
     {
+        /// <summary>
+        /// Общее количество заявок.
+        /// </summary>
+        public static float SummaryClientCount(DiagramData diagram) => diagram.SummaryClientCount;
+
+        /// <summary>
+        /// Количество обслуженных заявок.
+        /// </summary>
+        public static float ServedClientCount(DiagramData diagram) => diagram.ServedClientCount;
+
+        /// <summary>
+        /// Количество отказанных заявок.
+        /// </summary>
+        public static float LostClientCount(DiagramData diagram) => diagram.LostClientCount;
+
+        /// <summary>
+        /// Время работы системы.
+        /// </summary>
+        public static float SystemWorkTime(DiagramData diagram) => (float)diagram.SystemWorkTime;
 
         /// <summary>
         /// Количество показателей.
