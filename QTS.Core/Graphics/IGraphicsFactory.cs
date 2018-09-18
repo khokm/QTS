@@ -16,6 +16,8 @@ namespace QTS.Core.Graphics
         /// <returns>Экземпляр интерактивной диаграммы.</returns>
         T CreateEmptyDiagram(IEnumerable<string> yLabels);
 
+        T CreateInteractiveGraph(string graphTitle);
+
         /// <summary>
         /// Создает новый экземпяр графика и равномерно заполняет его значениями из <paramref name="yValues"/> с шагом 1, начиная с <paramref name="startX"/>
         /// </summary>
@@ -24,7 +26,7 @@ namespace QTS.Core.Graphics
         /// <param name="XAxis">Название оси абцисс</param>
         /// <param name="YAxis">Название оси ординат</param>
         /// <returns>Экземпляр графика.</returns>
-        G CreateEmptyGraph(int startX, IEnumerable<double> yValues, string XAxis, string YAxis);
+        G CreateGraphByPoints(int startX, IEnumerable<double> yValues, string XAxis, string YAxis);
 
     }
 }

@@ -47,7 +47,7 @@ namespace QTS.OxyPlotGraphics
             }
         }
 
-        public OxyPlotGraph(string XAxisTitle, string YAxisTitle, double minimumX, double minimumXRange, double minimumMajorStep, double minimumMinorStep, IEnumerable<string> yLabels)
+        public OxyPlotGraph(string XAxisTitle, string YAxisTitle, double minimumX, double minumumY, double minimumXRange, double minimumMajorStep, double minimumMinorStep, IEnumerable<string> yLabels)
         {
             PlotModel = new PlotModel()
             {
@@ -95,7 +95,7 @@ namespace QTS.OxyPlotGraphics
                 yAxis = new LinearAxis()
                 {
                     Position = AxisPosition.Left,
-                    AbsoluteMinimum = 0,
+                    AbsoluteMinimum = minumumY,
                     Minimum = 0,
                     MinimumRange = 1,
                     MajorGridlineStyle = LineStyle.Solid,
@@ -111,16 +111,10 @@ namespace QTS.OxyPlotGraphics
             PlotModel.Axes.Insert(1, yAxis);
         }
 
-        public OxyPlotGraph(int minX, IEnumerable<double> yValues, string XAxisTitle, string YAxisTitle, double minimumX, double minimumMajorStep, double minimumMinorStep, double minimumXRange, IEnumerable<string> yLabels) : 
-            this(XAxisTitle, YAxisTitle, minimumX, minimumXRange, minimumMajorStep, minimumMinorStep, yLabels)
-        {
-            CreateLineByPoints(yValues, minX);
-        }
-
-        public override void CreateLineByPoints(IEnumerable<double> yValues, double minX)
+        public override void CreateLineByPoints(IEnumerable<double> yValues, double startX)
         {
             BeginLine();
-            currentLine.Points.AddRange(yValues.Select(value => new DataPoint(minX++, value)));
+            currentLine.Points.AddRange(yValues.Select(value => new DataPoint(startX++, value)));
             CompleteLine();
         }
 

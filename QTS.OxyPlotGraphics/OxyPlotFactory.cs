@@ -8,19 +8,21 @@ namespace QTS.OxyPlotGraphics
     /// </summary>
     public class OxyPlotFactory : IGraphicsFactory<OxyPlotGraph, OxyPlotGraph>
     {
-        public OxyPlotGraph CreateEmptyGraph(int minX, IEnumerable<double> yValues, string XAxis, string YAxis)
+        public OxyPlotGraph CreateGraphByPoints(int startX, IEnumerable<double> yValues, string XAxis, string YAxis)
         {
-            return new OxyPlotGraph(minX, yValues, XAxis, YAxis, 0, 1, 1, 1, null);
+            var graph = new OxyPlotGraph(XAxis, YAxis, 0, 0, 1, 1, 1, null);
+            graph.CreateLineByPoints(yValues, startX);
+            return graph;
         }
 
-        //public OxyPlotDiagram CreateEmptyDiagram(int channelCount, int queueCapacity)
-        //{
-        //    return new OxyPlotDiagram(channelCount, queueCapacity);
-        //}
+        public OxyPlotGraph CreateInteractiveGraph(string graphTitle)
+        {
+            return new OxyPlotGraph("Количество мест в очереди", graphTitle, double.MinValue, double.MinValue, 1, 1, 1, null);
+        }
 
         public OxyPlotGraph CreateEmptyDiagram(IEnumerable<string> yLabels)
         {
-            return new OxyPlotGraph("Время (ч)", "", double.MinValue, 0, 0, 0, yLabels);
+            return new OxyPlotGraph("Время (ч)", "", double.MinValue, double.MinValue, 0, 0, 0, yLabels);
         }
     }
 }
