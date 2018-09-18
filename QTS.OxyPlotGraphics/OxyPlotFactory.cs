@@ -11,7 +11,9 @@ namespace QTS.OxyPlotGraphics
         public OxyPlotGraph CreateGraphByPoints(int startX, IEnumerable<double> yValues, string XAxis, string YAxis)
         {
             var graph = new OxyPlotGraph(XAxis, YAxis, 0, 0, 1, 1, 1, null);
+            graph.BeginLine();
             graph.CreateLineByPoints(yValues, startX);
+            graph.CompleteLine();
             return graph;
         }
 

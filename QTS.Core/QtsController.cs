@@ -3,6 +3,8 @@ using QTS.Core.Graphics;
 using QTS.Core.Diagram;
 
 using System.Collections.Generic;
+using System.Linq;
+using System;
 
 namespace QTS.Core
 {
@@ -17,6 +19,8 @@ namespace QTS.Core
 
         ICallbackUi CallbackUi { get; }
         IGraphicsFactory<InteractiveDiagram, IGraph> GraphicsFactory { get; }
+
+        InteractiveDiagram savedDiagam = null;
 
         static IEnumerable<Metric> clientMetrics = new[]
         {
@@ -121,6 +125,26 @@ namespace QTS.Core
             return true;
         }
 
+        bool CheckParametersValid(GraphImprovementParamsData paramsData, int metricsCount)
+        {
+            if (paramsData == null)
+                return false;
+
+            if(paramsData.MetricIndex < 0 || paramsData.MetricIndex > metricsCount - 1)
+            {
+                CallbackUi.ShowError("Улучшение графика", "Такого графика не существует.");
+                return false;
+            }
+
+            if (paramsData.ExperimentCount <= 0)
+            {
+                CallbackUi.ShowError("Улучшение графика", "Количество повторов экспериментов должно быть больше 0.");
+                return false;
+            }
+
+            return true;
+        }
+
         static string MakeReport(ParametersContainer diagramParameters, TimeDiagram timeDiagram)
         {
             return diagramParameters.ToString() + "\r\n" + ReportTool.MakeReport(timeDiagram, clientMetrics, GetMetrics(timeDiagram.ChannelCount, timeDiagram.QueueCapacity));
@@ -160,6 +184,8 @@ namespace QTS.Core
             if (!CheckParametersValid(parameters))
                 return;
 
+            savedDiagam = null;
+
             TimeDiagram timeDiagram;
 
             bool useGraphics = true;
@@ -178,9 +204,9 @@ namespace QTS.Core
             {
                 timeDiagram = useGraphics ? modeller.CreateDiagram(GraphicsFactory, out intDiag) : modeller.CreateDiagram();
             }
-            catch (System.Exception ex)
+            catch
             {
-                CallbackUi.ShowError("Создать диаграмму", "При моделировании процесса возникло исключение." + ex.StackTrace);
+                CallbackUi.ShowError("Создать диаграмму", "При моделировании процесса возникло исключение."/* + ex.StackTrace*/);
                 return;
             }
 
@@ -233,7 +259,7 @@ namespace QTS.Core
 
             reportsFolder = CallbackUi.GetFolderPath("Выберите папку для сохранения отчетов", graphsFolder);
 
-            if(graphsFolder == "" && reportsFolder == "")
+            if (graphsFolder == "" && reportsFolder == "")
             {
                 CallbackUi.ShowWarning("Синтез СМО", "Отмена синтеза СМО");
                 return;
@@ -262,14 +288,15 @@ namespace QTS.Core
 
             CallbackUi.CloseProgressWindow();
 
-            var graphs = ReportTool.CreateGraphs(diagrams, GetMetrics(parameters.ChannelCount, gradient.MaxQueueCapacity), gradient, GraphicsFactory);
-
             try
             {
                 if (graphsFolder != "")
                 {
-                    foreach (var graph in graphs)
+                    foreach (var metric in GetMetrics(parameters.ChannelCount, gradient.MaxQueueCapacity))
+                    {
+                        var graph = GraphicsFactory.CreateGraphByPoints(gradient.MinQueueCapacity, ReportTool.GetHeights(diagrams, metric), "Кол-во мест в очереди", metric.Name);
                         graph.ExportToBitmap(true, graphsFolder + "/" + graph.Title + ".png");
+                    }
 
                     CallbackUi.StartExplorer(graphsFolder);
                 }
@@ -295,6 +322,87 @@ namespace QTS.Core
                 CallbackUi.ShowError("Синтез СМО", "Недостаточно прав для записи в " + reportsFolder);
             }
 
+        }
+
+        public void MakeGraphImprovement()
+        {
+            ParametersContainer parameters;
+            QueuePlaceGradientData gradient;
+
+            if (!CheckParametersValid(parameters = CallbackUi.GetDiagramParameters()) ||
+                !CheckParametersValid(gradient = CallbackUi.GetQueuePlaceGradientData()))
+                return;
+
+            var metrics = GetMetrics(parameters.ChannelCount, gradient.MaxQueueCapacity).ToArray();
+
+            GraphImprovementParamsData improvementData = CallbackUi.GetGraphImprovementParams(metrics.Select(metric => metric.Name).ToArray());
+
+            if (!CheckParametersValid(improvementData, metrics.Length))
+                return;
+
+            Metric usedMetric = metrics[improvementData.MetricIndex];
+
+            InteractiveDiagram intDiag = GraphicsFactory.CreateInteractiveGraph(usedMetric.Name);
+            savedDiagam = GraphicsFactory.CreateInteractiveGraph(usedMetric.Name);
+
+            double[] heightsSum = null;
+
+            for (int i = 0; i < improvementData.ExperimentCount; i++)
+            {
+                List<TimeDiagram> diagrams = new List<TimeDiagram>(gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
+
+                for (parameters.QueueCapacity = gradient.MinQueueCapacity; parameters.QueueCapacity <= gradient.MaxQueueCapacity; parameters.QueueCapacity++)
+                {
+                    CallbackUi.ShowProgressWindow($"Эксперимент { i + 1} из {improvementData.ExperimentCount}.\nМоделирование процесса: {parameters.QueueCapacity - gradient.MinQueueCapacity + 1} из {gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1}...");
+
+                    ProcessModeller modeller = new ProcessModeller(parameters);
+                    try
+                    {
+                        diagrams.Add(modeller.CreateDiagram());
+                    }
+                    catch
+                    {
+                        CallbackUi.CloseProgressWindow();
+                        CallbackUi.ShowError("Улучшение графика", "При моделировании процесса возникло исключение."/* + ex.Message*/);
+                    }
+
+                }
+
+                var heights = ReportTool.GetHeights(diagrams, usedMetric);
+
+                if (heightsSum == null)
+                    heightsSum = heights.ToArray();
+                else
+                    heightsSum = heightsSum.Zip(heights, (a, b) => a + b).ToArray();
+
+                intDiag.BeginInteractiveLine(i);
+                intDiag.CreateLineByPoints(heights, gradient.MinQueueCapacity);
+                intDiag.AddLineMetadata($"Эксперимент { i + 1 }");
+                intDiag.CompleteLine();
+            }
+
+            savedDiagam.BeginLine();
+            savedDiagam.CreateLineByPoints(heightsSum.Select(height => height / improvementData.ExperimentCount), gradient.MinQueueCapacity);
+            savedDiagam.AddLineMetadata($"Сумма { improvementData.ExperimentCount } графиков");
+            savedDiagam.CompleteLine();
+
+            CallbackUi.CloseProgressWindow();
+
+            CallbackUi.InteractiveDiagram = intDiag;
+            intDiag.ViewUpdated += CallbackUi.InvalidateDiagramView;
+            intDiag.GoToEnd();
+            savedDiagam.GoToEnd();
+            savedDiagam.ViewUpdated += CallbackUi.InvalidateDiagramView;
+        }
+
+        public void SwitchDiagram()
+        {
+            if (savedDiagam == null)
+                return;
+
+            var newDiagram = CallbackUi.InteractiveDiagram;
+            CallbackUi.InteractiveDiagram = savedDiagam;
+            savedDiagam = newDiagram;
         }
         #endregion
     }

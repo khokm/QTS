@@ -53,6 +53,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Forms\EnterGraphImprovementDataForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\EnterGraphImprovementDataForm.Designer.cs">
+      <DependentUpon>EnterGraphImprovementDataForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\AboutControlsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -88,6 +94,9 @@
     <Compile Include="Forms\TextWindow.Designer.cs">
       <DependentUpon>TextWindow.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="Forms\EnterGraphImprovementDataForm.resx">
+      <DependentUpon>EnterGraphImprovementDataForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Forms\AboutControlsForm.resx">
       <DependentUpon>AboutControlsForm.cs</DependentUpon>
     </EmbeddedResource>

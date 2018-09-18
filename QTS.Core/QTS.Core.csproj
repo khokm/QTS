@@ -35,6 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Diagram\IAnalyzable.cs" />
+    <Compile Include="Diagram\GraphImprovementParamsData.cs" />
     <Compile Include="Graphics\InteractiveDiagram.cs" />
     <Compile Include="Diagram\QueuePlaceGradientData.cs" />
     <Compile Include="Tools\RandomGenerator.cs" />

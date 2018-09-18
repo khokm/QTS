@@ -111,12 +111,8 @@ namespace QTS.OxyPlotGraphics
             PlotModel.Axes.Insert(1, yAxis);
         }
 
-        public override void CreateLineByPoints(IEnumerable<double> yValues, double startX)
-        {
-            BeginLine();
+        public override void CreateLineByPoints(IEnumerable<double> yValues, double startX) => 
             currentLine.Points.AddRange(yValues.Select(value => new DataPoint(startX++, value)));
-            CompleteLine();
-        }
 
         public override void AddPoint(double y, double x)
         {

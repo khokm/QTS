@@ -38,6 +38,7 @@
             this.анализToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.анализДиаграммыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.синтезСМОToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.улучшениеГрафикаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.помощьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.управлениеToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.RightPanel = new System.Windows.Forms.Panel();
@@ -64,7 +65,8 @@
             this.stepBack_Button = new System.Windows.Forms.ToolStripButton();
             this.stepForward_Button = new System.Windows.Forms.ToolStripButton();
             this.toEnd_Button = new System.Windows.Forms.ToolStripButton();
-            this.showPrevLines_CheckBox = new System.Windows.Forms.CheckBox();
+            this.ShowPreviousLines_ComboBox = new System.Windows.Forms.ToolStripComboBox();
+            this.ShowGraphs_ComboBox = new System.Windows.Forms.ToolStripComboBox();
             this.menuStrip1.SuspendLayout();
             this.RightPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.clientLimit_Numeric)).BeginInit();
@@ -132,7 +134,8 @@
             // 
             this.анализToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.анализДиаграммыToolStripMenuItem,
-            this.синтезСМОToolStripMenuItem});
+            this.синтезСМОToolStripMenuItem,
+            this.улучшениеГрафикаToolStripMenuItem});
             this.анализToolStripMenuItem.Name = "анализToolStripMenuItem";
             this.анализToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
             this.анализToolStripMenuItem.Text = "Анализ";
@@ -140,16 +143,23 @@
             // анализДиаграммыToolStripMenuItem
             // 
             this.анализДиаграммыToolStripMenuItem.Name = "анализДиаграммыToolStripMenuItem";
-            this.анализДиаграммыToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.анализДиаграммыToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             this.анализДиаграммыToolStripMenuItem.Text = "Анализ диаграммы...";
             this.анализДиаграммыToolStripMenuItem.Click += new System.EventHandler(this.анализДиаграммыToolStripMenuItem_Click);
             // 
             // синтезСМОToolStripMenuItem
             // 
             this.синтезСМОToolStripMenuItem.Name = "синтезСМОToolStripMenuItem";
-            this.синтезСМОToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.синтезСМОToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
             this.синтезСМОToolStripMenuItem.Text = "Синтез СМО...";
             this.синтезСМОToolStripMenuItem.Click += new System.EventHandler(this.синтезСМОToolStripMenuItem_Click);
+            // 
+            // улучшениеГрафикаToolStripMenuItem
+            // 
+            this.улучшениеГрафикаToolStripMenuItem.Name = "улучшениеГрафикаToolStripMenuItem";
+            this.улучшениеГрафикаToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.улучшениеГрафикаToolStripMenuItem.Text = "Улучшение графика...";
+            this.улучшениеГрафикаToolStripMenuItem.Click += new System.EventHandler(this.улучшениеГрафикаToolStripMenuItem_Click);
             // 
             // помощьToolStripMenuItem
             // 
@@ -419,7 +429,9 @@
             this.toStart_Button,
             this.stepBack_Button,
             this.stepForward_Button,
-            this.toEnd_Button});
+            this.toEnd_Button,
+            this.ShowPreviousLines_ComboBox,
+            this.ShowGraphs_ComboBox});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -467,25 +479,34 @@
             this.toEnd_Button.Text = "В конец";
             this.toEnd_Button.Click += new System.EventHandler(this.toEnd_Button_Click);
             // 
-            // showPrevLines_CheckBox
+            // ShowPreviousLines_ComboBox
             // 
-            this.showPrevLines_CheckBox.AutoSize = true;
-            this.showPrevLines_CheckBox.Checked = true;
-            this.showPrevLines_CheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.showPrevLines_CheckBox.Location = new System.Drawing.Point(290, 28);
-            this.showPrevLines_CheckBox.Name = "showPrevLines_CheckBox";
-            this.showPrevLines_CheckBox.Size = new System.Drawing.Size(188, 17);
-            this.showPrevLines_CheckBox.TabIndex = 1;
-            this.showPrevLines_CheckBox.Text = "Отображать предыдущие линии";
-            this.showPrevLines_CheckBox.UseVisualStyleBackColor = true;
-            this.showPrevLines_CheckBox.CheckedChanged += new System.EventHandler(this.showPrevLines_CheckBox_CheckedChanged);
+            this.ShowPreviousLines_ComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ShowPreviousLines_ComboBox.DropDownWidth = 130;
+            this.ShowPreviousLines_ComboBox.Items.AddRange(new object[] {
+            "Показать все линии",
+            "Показать одну линию"});
+            this.ShowPreviousLines_ComboBox.MergeIndex = 0;
+            this.ShowPreviousLines_ComboBox.Name = "ShowPreviousLines_ComboBox";
+            this.ShowPreviousLines_ComboBox.Size = new System.Drawing.Size(130, 25);
+            this.ShowPreviousLines_ComboBox.SelectedIndexChanged += new System.EventHandler(this.ShowPreviousLines_ComboBox_SelectedIndexChanged);
+            // 
+            // ShowGraphs_ComboBox
+            // 
+            this.ShowGraphs_ComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ShowGraphs_ComboBox.Items.AddRange(new object[] {
+            "Показать семейство графиков",
+            "Показать сумму графиков"});
+            this.ShowGraphs_ComboBox.MergeIndex = 0;
+            this.ShowGraphs_ComboBox.Name = "ShowGraphs_ComboBox";
+            this.ShowGraphs_ComboBox.Size = new System.Drawing.Size(180, 25);
+            this.ShowGraphs_ComboBox.SelectedIndexChanged += new System.EventHandler(this.ShowGraphs_ComboBox_SelectedIndexChanged);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1123, 630);
-            this.Controls.Add(this.showPrevLines_CheckBox);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.RightPanel);
             this.Controls.Add(this.PlotPanel);
@@ -531,8 +552,6 @@
         private System.Windows.Forms.ToolStripButton toStart_Button;
         private System.Windows.Forms.ToolStripButton stepForward_Button;
         private System.Windows.Forms.ToolStripButton stepBack_Button;
-        private System.Windows.Forms.ToolStripButton toEnd_Button;
-        private System.Windows.Forms.CheckBox showPrevLines_CheckBox;
         private System.Windows.Forms.NumericUpDown threadIntencity_Numeric;
         private System.Windows.Forms.NumericUpDown parkPlace_Numeric;
         private System.Windows.Forms.NumericUpDown minRnd_Numeric;
@@ -550,5 +569,9 @@
         private System.Windows.Forms.ToolStripMenuItem загрузитьКонфигурациюToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem сохранитьКонфигурациюКакToolStripMenuItem;
         private System.Windows.Forms.Label statusText;
+        private System.Windows.Forms.ToolStripMenuItem улучшениеГрафикаToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton toEnd_Button;
+        private System.Windows.Forms.ToolStripComboBox ShowPreviousLines_ComboBox;
+        private System.Windows.Forms.ToolStripComboBox ShowGraphs_ComboBox;
     }
 }

@@ -22,6 +22,14 @@ namespace QTS.WinForms
         {
             InitializeComponent();
 
+            ShowPreviousLines_ComboBox.SelectedIndex = 0;
+            ShowGraphs_ComboBox.SelectedIndex = 0;
+
+            plot1.Model = new PlotModel()
+            {
+                IsLegendVisible = false,
+            };
+
             controller = new QtsController(this, new OxyPlotFactory());
 
             /*
@@ -217,10 +225,20 @@ namespace QTS.WinForms
 
         private void toEnd_Button_Click(object sender, EventArgs e) => InteractiveDiagram?.GoToEnd();
 
-        private void showPrevLines_CheckBox_CheckedChanged(object sender, EventArgs e)
+        private void ShowPreviousLines_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(InteractiveDiagram != null)
-                InteractiveDiagram.ShowPreviousLines = showPrevLines_CheckBox.Checked;
+            if (InteractiveDiagram != null)
+                InteractiveDiagram.ShowPreviousLines = ShowPreviousLines_ComboBox.SelectedIndex == 0;
+        }
+
+        int prevSelectedIndex = 0;
+
+        private void ShowGraphs_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if(ShowGraphs_ComboBox.SelectedIndex != prevSelectedIndex)
+                controller.SwitchDiagram();
+
+            prevSelectedIndex = ShowGraphs_ComboBox.SelectedIndex;
         }
         #endregion
 
@@ -234,6 +252,8 @@ namespace QTS.WinForms
         private void построитьГрафикToolStripMenuItem_Click(object sender, EventArgs e) => controller.MakeDiagram();
 
         private void синтезСМОToolStripMenuItem_Click(object sender, EventArgs e) => controller.MakeSynthesis();
+
+        private void улучшениеГрафикаToolStripMenuItem_Click(object sender, EventArgs e) => controller.MakeGraphImprovement();
 
         private void управлениеToolStripMenuItem_Click(object sender, EventArgs e)
         {

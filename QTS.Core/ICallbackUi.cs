@@ -1,5 +1,6 @@
 ﻿using QTS.Core.Graphics;
 using QTS.Core.Diagram;
+using System.Collections.Generic;
 
 namespace QTS.Core
 {
@@ -28,6 +29,7 @@ namespace QTS.Core
         /// <returns></returns>
         QueuePlaceGradientData GetQueuePlaceGradientData();
 
+        GraphImprovementParamsData GetGraphImprovementParams(string[] metricNames);
         /// <summary>
         /// Запрашивает подтверждение/отрицание пользователя о каких-либо действиях программы.
         /// </summary>
@@ -75,5 +77,6 @@ namespace QTS.Core
         void ShowProgressWindow(string description);
 
         void CloseProgressWindow();
+
     }
 }

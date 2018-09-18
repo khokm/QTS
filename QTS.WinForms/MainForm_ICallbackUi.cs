@@ -28,7 +28,8 @@ namespace QTS.WinForms
 
             set
             {
-                showPrevLines_CheckBox.Checked = true;
+                ShowPreviousLines_ComboBox.SelectedIndex = 0;
+                prevSelectedIndex = 0;
 
                 plot1.Model = (value as OxyPlotGraph)?.PlotModel;
                 diagram = value;
@@ -60,6 +61,18 @@ namespace QTS.WinForms
 
                 return form.gradientData;
             }
+        }
+
+        public GraphImprovementParamsData GetGraphImprovementParams(string[] names)
+        {
+            using (var form = new EnterGraphImprovementDataForm(names) { StartPosition = FormStartPosition.CenterParent })
+            {
+                if (form.ShowDialog(this) != DialogResult.OK)
+                    return null;
+
+                return form.ImprovementData;
+            }
+
         }
 
         public string GetFolderPath(string description, string defaultFolder)
