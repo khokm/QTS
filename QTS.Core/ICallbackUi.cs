@@ -74,9 +74,12 @@ namespace QTS.Core
 
         void CreateTextFile(string path, string text);
 
-        void ShowProgressWindow(string description);
+        void LockInterface();
 
-        void CloseProgressWindow();
+        void ShowText(string description);
 
+        void HideText();
+
+        void UnlockInterface();
     }
 }

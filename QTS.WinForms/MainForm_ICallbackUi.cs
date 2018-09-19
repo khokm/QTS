@@ -106,24 +106,33 @@ namespace QTS.WinForms
             return "";
         }
 
-        public void ShowProgressWindow(string description)
+        public void LockInterface()
+        {
+            if (Enabled == false)
+                return;
+
+            SuspendLayout();
+            Enabled = false;
+            Application.DoEvents();
+        }
+
+        public void ShowText(string description)
         {
             statusText.Text = description;
 
             if (!statusText.Visible)
-            {
                 statusText.Visible = true;
-                SuspendLayout();
-                Enabled = false;
-            }
 
             statusText.Refresh();
-            Application.DoEvents();
         }
 
-        public void CloseProgressWindow()
+        public void HideText() => statusText.Visible = false;
+
+        public void UnlockInterface()
         {
-            statusText.Visible = false;
+            if (Enabled == true)
+                return;
+
             Enabled = true;
             ResumeLayout();
         }

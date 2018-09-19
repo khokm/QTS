@@ -186,7 +186,7 @@ namespace QTS.Core
 
             bool useGraphics = true;
 
-            if (parameters.HasClientLimit && parameters.ClientLimit > 200 || parameters.TimeLimit * parameters.ThreadIntencity > 200)
+            if (parameters.HasClientLimit && parameters.ClientLimit > 200 || parameters.HasTimeLimit && parameters.TimeLimit * parameters.ThreadIntencity > 200)
             {
                 string text = parameters.HasClientLimit ? string.Format("содержит {0}", parameters.ClientLimit) : string.Format("будет содержать около {0}", parameters.ThreadIntencity * parameters.TimeLimit);
                 useGraphics = CallbackUi.YesNoDialog("Предупреждение", "Временная диаграмма " + text + " линий.\nЕе отрисовка может вызвать замедление работы компьютера.\n Отрисовать диаграмму ?\n(анализ диаграммы возможен при любом выборе)");
@@ -212,8 +212,13 @@ namespace QTS.Core
 
             if (intDiag != null)
             {
+                CallbackUi.HideText();
                 intDiag.ViewUpdated += CallbackUi.InvalidateDiagramView;
                 intDiag.GoToEnd();
+            }
+            else
+            {
+                CallbackUi.ShowText("Отображение диграммы отключено.\nДля ее анализа, используйте Действия - Анализ диаграммы.");
             }
         }
 
@@ -263,10 +268,12 @@ namespace QTS.Core
 
             List<TimeDiagram> diagrams = new List<TimeDiagram>(gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
 
+            CallbackUi.LockInterface();
+
             //Меняем параметр "КМО".
             for (parameters.QueueCapacity = gradient.MinQueueCapacity; parameters.QueueCapacity <= gradient.MaxQueueCapacity; parameters.QueueCapacity++)
             {
-                CallbackUi.ShowProgressWindow($"Моделирование процесса: {parameters.QueueCapacity - gradient.MinQueueCapacity + 1} из {gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1}...");
+                CallbackUi.ShowText($"Моделирование процесса: {parameters.QueueCapacity - gradient.MinQueueCapacity + 1} из {gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1}...");
 
                 ProcessModeller modeller = new ProcessModeller(parameters);
 
@@ -276,13 +283,15 @@ namespace QTS.Core
                 }
                 catch/* (Exception ex)*/
                 {
-                    CallbackUi.CloseProgressWindow();
+                    CallbackUi.HideText();
+                    CallbackUi.UnlockInterface();
                     CallbackUi.ShowError("Синтез СМО", "При моделировании процесса возникло исключение."/* + ex.Message*/);
                     return;
                 }
             }
 
-            CallbackUi.CloseProgressWindow();
+            CallbackUi.HideText();
+            CallbackUi.UnlockInterface();
 
             try
             {
@@ -342,13 +351,15 @@ namespace QTS.Core
 
             double[] heightsSum = null;
 
+            CallbackUi.LockInterface();
+
             for (int i = 0; i < improvementData.ExperimentCount; i++)
             {
                 List<TimeDiagram> diagrams = new List<TimeDiagram>(gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
 
                 for (parameters.QueueCapacity = gradient.MinQueueCapacity; parameters.QueueCapacity <= gradient.MaxQueueCapacity; parameters.QueueCapacity++)
                 {
-                    CallbackUi.ShowProgressWindow($"Эксперимент { i + 1} из {improvementData.ExperimentCount}.\nМоделирование процесса: {parameters.QueueCapacity - gradient.MinQueueCapacity + 1} из {gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1}...");
+                    CallbackUi.ShowText($"Эксперимент { i + 1} из {improvementData.ExperimentCount}.\nМоделирование процесса: {parameters.QueueCapacity - gradient.MinQueueCapacity + 1} из {gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1}...");
 
                     ProcessModeller modeller = new ProcessModeller(parameters);
                     try
@@ -357,7 +368,8 @@ namespace QTS.Core
                     }
                     catch
                     {
-                        CallbackUi.CloseProgressWindow();
+                        CallbackUi.HideText();
+                        CallbackUi.UnlockInterface();
                         CallbackUi.ShowError("Улучшение графика", "При моделировании процесса возникло исключение."/* + ex.Message*/);
                     }
 
@@ -376,12 +388,14 @@ namespace QTS.Core
                 intDiag.CompleteLine();
             }
 
+            CallbackUi.HideText();
+            CallbackUi.UnlockInterface();
+
             intDiag.BeginLine(1);
             intDiag.CreateLineByPoints(heightsSum.Select(height => height / improvementData.ExperimentCount), gradient.MinQueueCapacity);
             intDiag.AddLineMetadata($"Сумма { improvementData.ExperimentCount } графиков");
             intDiag.CompleteLine();
 
-            CallbackUi.CloseProgressWindow();
 
             CallbackUi.InteractiveDiagram = intDiag;
             intDiag.SetLayer(0);
