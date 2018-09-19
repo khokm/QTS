@@ -33,9 +33,8 @@
             this.файлToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.загрузитьКонфигурациюToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.сохранитьКонфигурациюКакToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.графикToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.построитьГрафикToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.анализToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.построитьГрафикToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.анализДиаграммыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.синтезСМОToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.улучшениеГрафикаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -83,7 +82,6 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.файлToolStripMenuItem,
-            this.графикToolStripMenuItem,
             this.анализToolStripMenuItem,
             this.помощьToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
@@ -115,13 +113,16 @@
             this.сохранитьКонфигурациюКакToolStripMenuItem.Text = "Сохранить конфигурацию в файл...";
             this.сохранитьКонфигурациюКакToolStripMenuItem.Click += new System.EventHandler(this.сохранитьКонфигурациюКакToolStripMenuItem_Click);
             // 
-            // графикToolStripMenuItem
+            // анализToolStripMenuItem
             // 
-            this.графикToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.построитьГрафикToolStripMenuItem});
-            this.графикToolStripMenuItem.Name = "графикToolStripMenuItem";
-            this.графикToolStripMenuItem.Size = new System.Drawing.Size(57, 20);
-            this.графикToolStripMenuItem.Text = "График";
+            this.анализToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.построитьГрафикToolStripMenuItem,
+            this.анализДиаграммыToolStripMenuItem,
+            this.синтезСМОToolStripMenuItem,
+            this.улучшениеГрафикаToolStripMenuItem});
+            this.анализToolStripMenuItem.Name = "анализToolStripMenuItem";
+            this.анализToolStripMenuItem.Size = new System.Drawing.Size(68, 20);
+            this.анализToolStripMenuItem.Text = "Действия";
             // 
             // построитьГрафикToolStripMenuItem
             // 
@@ -130,34 +131,24 @@
             this.построитьГрафикToolStripMenuItem.Text = "Построить временную диаграмму";
             this.построитьГрафикToolStripMenuItem.Click += new System.EventHandler(this.построитьГрафикToolStripMenuItem_Click);
             // 
-            // анализToolStripMenuItem
-            // 
-            this.анализToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.анализДиаграммыToolStripMenuItem,
-            this.синтезСМОToolStripMenuItem,
-            this.улучшениеГрафикаToolStripMenuItem});
-            this.анализToolStripMenuItem.Name = "анализToolStripMenuItem";
-            this.анализToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
-            this.анализToolStripMenuItem.Text = "Анализ";
-            // 
             // анализДиаграммыToolStripMenuItem
             // 
             this.анализДиаграммыToolStripMenuItem.Name = "анализДиаграммыToolStripMenuItem";
-            this.анализДиаграммыToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.анализДиаграммыToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
             this.анализДиаграммыToolStripMenuItem.Text = "Анализ диаграммы...";
             this.анализДиаграммыToolStripMenuItem.Click += new System.EventHandler(this.анализДиаграммыToolStripMenuItem_Click);
             // 
             // синтезСМОToolStripMenuItem
             // 
             this.синтезСМОToolStripMenuItem.Name = "синтезСМОToolStripMenuItem";
-            this.синтезСМОToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.синтезСМОToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
             this.синтезСМОToolStripMenuItem.Text = "Синтез СМО...";
             this.синтезСМОToolStripMenuItem.Click += new System.EventHandler(this.синтезСМОToolStripMenuItem_Click);
             // 
             // улучшениеГрафикаToolStripMenuItem
             // 
             this.улучшениеГрафикаToolStripMenuItem.Name = "улучшениеГрафикаToolStripMenuItem";
-            this.улучшениеГрафикаToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.улучшениеГрафикаToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
             this.улучшениеГрафикаToolStripMenuItem.Text = "Улучшение графика...";
             this.улучшениеГрафикаToolStripMenuItem.Click += new System.EventHandler(this.улучшениеГрафикаToolStripMenuItem_Click);
             // 
@@ -544,7 +535,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.ToolStripMenuItem графикToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem построитьГрафикToolStripMenuItem;
         private OxyPlot.WindowsForms.PlotView plot1;
         private System.Windows.Forms.Panel PlotPanel;
