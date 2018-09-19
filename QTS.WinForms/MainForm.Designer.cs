@@ -66,6 +66,10 @@
             this.toEnd_Button = new System.Windows.Forms.ToolStripButton();
             this.ShowPreviousLines_ComboBox = new System.Windows.Forms.ToolStripComboBox();
             this.ShowGraphs_ComboBox = new System.Windows.Forms.ToolStripComboBox();
+            this.описаниеФункцийToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
             this.menuStrip1.SuspendLayout();
             this.RightPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.clientLimit_Numeric)).BeginInit();
@@ -155,7 +159,8 @@
             // помощьToolStripMenuItem
             // 
             this.помощьToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.управлениеToolStripMenuItem});
+            this.управлениеToolStripMenuItem,
+            this.описаниеФункцийToolStripMenuItem});
             this.помощьToolStripMenuItem.Name = "помощьToolStripMenuItem";
             this.помощьToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
             this.помощьToolStripMenuItem.Text = "Помощь";
@@ -421,7 +426,10 @@
             this.stepBack_Button,
             this.stepForward_Button,
             this.toEnd_Button,
+            this.toolStripSeparator1,
+            this.toolStripLabel1,
             this.ShowPreviousLines_ComboBox,
+            this.toolStripLabel2,
             this.ShowGraphs_ComboBox});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
@@ -473,25 +481,48 @@
             // ShowPreviousLines_ComboBox
             // 
             this.ShowPreviousLines_ComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.ShowPreviousLines_ComboBox.DropDownWidth = 130;
+            this.ShowPreviousLines_ComboBox.DropDownWidth = 75;
             this.ShowPreviousLines_ComboBox.Items.AddRange(new object[] {
-            "Показать все линии",
-            "Показать одну линию"});
+            "Все",
+            "Одну"});
             this.ShowPreviousLines_ComboBox.MergeIndex = 0;
             this.ShowPreviousLines_ComboBox.Name = "ShowPreviousLines_ComboBox";
-            this.ShowPreviousLines_ComboBox.Size = new System.Drawing.Size(130, 25);
+            this.ShowPreviousLines_ComboBox.Size = new System.Drawing.Size(75, 25);
             this.ShowPreviousLines_ComboBox.SelectedIndexChanged += new System.EventHandler(this.ShowPreviousLines_ComboBox_SelectedIndexChanged);
             // 
             // ShowGraphs_ComboBox
             // 
             this.ShowGraphs_ComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ShowGraphs_ComboBox.Items.AddRange(new object[] {
-            "Показать семейство графиков",
-            "Показать сумму графиков"});
+            "Семейство графиков",
+            "Сумму графиков"});
             this.ShowGraphs_ComboBox.MergeIndex = 0;
             this.ShowGraphs_ComboBox.Name = "ShowGraphs_ComboBox";
-            this.ShowGraphs_ComboBox.Size = new System.Drawing.Size(180, 25);
+            this.ShowGraphs_ComboBox.Size = new System.Drawing.Size(130, 25);
             this.ShowGraphs_ComboBox.SelectedIndexChanged += new System.EventHandler(this.ShowGraphs_ComboBox_SelectedIndexChanged);
+            // 
+            // описаниеФункцийToolStripMenuItem
+            // 
+            this.описаниеФункцийToolStripMenuItem.Name = "описаниеФункцийToolStripMenuItem";
+            this.описаниеФункцийToolStripMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.описаниеФункцийToolStripMenuItem.Text = "Описание функций программы";
+            // 
+            // toolStripLabel1
+            // 
+            this.toolStripLabel1.Name = "toolStripLabel1";
+            this.toolStripLabel1.Size = new System.Drawing.Size(125, 22);
+            this.toolStripLabel1.Text = "Показывать линии (Q):";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            // 
+            // toolStripLabel2
+            // 
+            this.toolStripLabel2.Name = "toolStripLabel2";
+            this.toolStripLabel2.Size = new System.Drawing.Size(94, 22);
+            this.toolStripLabel2.Text = "Показывать (W):";
             // 
             // MainForm
             // 
@@ -563,5 +594,9 @@
         private System.Windows.Forms.ToolStripButton toEnd_Button;
         private System.Windows.Forms.ToolStripComboBox ShowPreviousLines_ComboBox;
         private System.Windows.Forms.ToolStripComboBox ShowGraphs_ComboBox;
+        private System.Windows.Forms.ToolStripMenuItem описаниеФункцийToolStripMenuItem;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel2;
     }
 }
