@@ -314,6 +314,9 @@ namespace QTS.Core.Diagram
             for (int i = 1; i < ChannelCount; i++)
                 ChannelBusyTimes[i] -= ChannelBusyTimes[i + 1];
 
+            if (interactiveDiagram != null)
+                interactiveDiagram.SetLayer(0);
+
             Finished = true;          
         }
     }

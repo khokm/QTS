@@ -20,8 +20,6 @@ namespace QTS.Core
         ICallbackUi CallbackUi { get; }
         IGraphicsFactory<InteractiveDiagram, IGraph> GraphicsFactory { get; }
 
-        InteractiveDiagram savedDiagam = null;
-
         static IEnumerable<Metric> clientMetrics = new[]
         {
             new Metric("1. Количество заявок", "шт", Formulas.SummaryClientCount, MetricType.Integer),
@@ -184,8 +182,6 @@ namespace QTS.Core
             if (!CheckParametersValid(parameters))
                 return;
 
-            savedDiagam = null;
-
             TimeDiagram timeDiagram;
 
             bool useGraphics = true;
@@ -343,7 +339,6 @@ namespace QTS.Core
             Metric usedMetric = metrics[improvementData.MetricIndex];
 
             InteractiveDiagram intDiag = GraphicsFactory.CreateInteractiveGraph(usedMetric.Name);
-            savedDiagam = GraphicsFactory.CreateInteractiveGraph(usedMetric.Name);
 
             double[] heightsSum = null;
 
@@ -381,28 +376,17 @@ namespace QTS.Core
                 intDiag.CompleteLine();
             }
 
-            savedDiagam.BeginLine();
-            savedDiagam.CreateLineByPoints(heightsSum.Select(height => height / improvementData.ExperimentCount), gradient.MinQueueCapacity);
-            savedDiagam.AddLineMetadata($"Сумма { improvementData.ExperimentCount } графиков");
-            savedDiagam.CompleteLine();
+            intDiag.BeginLine(1);
+            intDiag.CreateLineByPoints(heightsSum.Select(height => height / improvementData.ExperimentCount), gradient.MinQueueCapacity);
+            intDiag.AddLineMetadata($"Сумма { improvementData.ExperimentCount } графиков");
+            intDiag.CompleteLine();
 
             CallbackUi.CloseProgressWindow();
 
             CallbackUi.InteractiveDiagram = intDiag;
+            intDiag.SetLayer(0);
             intDiag.ViewUpdated += CallbackUi.InvalidateDiagramView;
             intDiag.GoToEnd();
-            savedDiagam.GoToEnd();
-            savedDiagam.ViewUpdated += CallbackUi.InvalidateDiagramView;
-        }
-
-        public void SwitchDiagram()
-        {
-            if (savedDiagam == null)
-                return;
-
-            var newDiagram = CallbackUi.InteractiveDiagram;
-            CallbackUi.InteractiveDiagram = savedDiagam;
-            savedDiagam = newDiagram;
         }
         #endregion
     }

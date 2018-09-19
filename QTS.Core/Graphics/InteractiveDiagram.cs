@@ -17,9 +17,14 @@ namespace QTS.Core.Graphics
         /// </summary>
         public int LinesCount { get; private set; }
 
-        protected InteractiveDiagram()
+        int CurrentLayer { get; set; }
+        int layersCount;
+
+        protected InteractiveDiagram(int layerCount)
         {
             showPreviousLines = true;
+            layersCount = layerCount;
+            CurrentLayer = -1;
         }
 
         //                      ,o.----.-----.oo.
@@ -122,18 +127,24 @@ namespace QTS.Core.Graphics
         public void BeginLine()
         {
             LinesCount++;
-            CreateLine();
+            CreateLine(0);
         }
 
-        public void BeginInteractiveLine(object lineKey)
+        public void BeginLine(int layer)
         {
-            BeginLine();
+            LinesCount++;
+            CreateLine(layer);
+        }
+
+        public void BeginInteractiveLine(object lineKey, int layer = 0)
+        {
+            BeginLine(layer);
             MakeLineInteractive(lineKey, OnMouseDown);
         }
 
         public abstract string Title { get; set; }
 
-        protected abstract void CreateLine();
+        protected abstract void CreateLine(int layer);
 
         protected abstract void MakeLineInteractive(object lineKey, Action<object> onMouseDown);
 
@@ -152,6 +163,18 @@ namespace QTS.Core.Graphics
         public abstract void CreateLineByPoints(IEnumerable<double> yValues, double startX);
 
         public abstract void ExportToBitmap(bool betterHieghts, string path);
+
+        protected abstract void SetViewLayer(int layer);
+
+        public void SetLayer(int layer)
+        {
+            if (layer == CurrentLayer || layer < 0 || layer > layersCount - 1)
+                return;
+
+            SetViewLayer(layer);
+            CurrentLayer = layer;
+            viewUpdated?.Invoke();
+        }
 
         void SetVisibleLinesCount(int lineIndex)
         {

@@ -17,6 +17,9 @@ namespace QTS.OxyPlotGraphics
     {
         public PlotModel PlotModel { get; }
         LineSeries currentLine;
+        int currentLineLayer;
+
+        public List<Series>[] series;
 
         static int _currentColorIndex = 0;
         static List<OxyColor> DefaultColors = new List<OxyColor>()
@@ -47,7 +50,7 @@ namespace QTS.OxyPlotGraphics
             }
         }
 
-        public OxyPlotGraph(string XAxisTitle, string YAxisTitle, double minimumX, double minumumY, double minimumXRange, double minimumMajorStep, double minimumMinorStep, IEnumerable<string> yLabels)
+        public OxyPlotGraph(string XAxisTitle, string YAxisTitle, double minimumX, double minumumY, double minimumXRange, double minimumMajorStep, double minimumMinorStep, IEnumerable<string> yLabels, int layersCount) : base(layersCount)
         {
             PlotModel = new PlotModel()
             {
@@ -109,6 +112,7 @@ namespace QTS.OxyPlotGraphics
 
             PlotModel.Axes.Insert(0, xAxis);
             PlotModel.Axes.Insert(1, yAxis);
+            series = new List<Series>[layersCount].Select(list => new List<Series>()).ToArray();
         }
 
         public override void CreateLineByPoints(IEnumerable<double> yValues, double startX) => 
@@ -119,12 +123,14 @@ namespace QTS.OxyPlotGraphics
             currentLine.Points.Add(new DataPoint(x, y));
         }
 
-        protected override void CreateLine()
+        protected override void CreateLine(int layer)
         {
             currentLine = new LineSeries()
             {
-                LineStyle = LineStyle.Solid
+                LineStyle = LineStyle.Solid,
             };
+
+            currentLineLayer = layer;
             currentLine.TrackerFormatString = "";
         }
 
@@ -162,7 +168,15 @@ namespace QTS.OxyPlotGraphics
         {
             if(randomColor)
                 currentLine.Color = DefaultColors[_currentColorIndex++ % DefaultColors.Count];
-            PlotModel.Series.Add(currentLine);
+            series[currentLineLayer].Add(currentLine);
+        }
+
+        protected override void SetViewLayer(int layer)
+        {
+            PlotModel.Series.Clear();
+
+            foreach (var s in series[layer])
+                PlotModel.Series.Add(s);
         }
 
         public override void ExportToBitmap(bool betterHeights, string path)

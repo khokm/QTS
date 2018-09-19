@@ -29,7 +29,7 @@ namespace QTS.WinForms
             set
             {
                 ShowPreviousLines_ComboBox.SelectedIndex = 0;
-                prevSelectedIndex = 0;
+                ShowGraphs_ComboBox.SelectedIndex = 0;
 
                 plot1.Model = (value as OxyPlotGraph)?.PlotModel;
                 diagram = value;

@@ -231,15 +231,7 @@ namespace QTS.WinForms
                 InteractiveDiagram.ShowPreviousLines = ShowPreviousLines_ComboBox.SelectedIndex == 0;
         }
 
-        int prevSelectedIndex = 0;
-
-        private void ShowGraphs_ComboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if(ShowGraphs_ComboBox.SelectedIndex != prevSelectedIndex)
-                controller.SwitchDiagram();
-
-            prevSelectedIndex = ShowGraphs_ComboBox.SelectedIndex;
-        }
+        private void ShowGraphs_ComboBox_SelectedIndexChanged(object sender, EventArgs e) => InteractiveDiagram?.SetLayer(ShowGraphs_ComboBox.SelectedIndex);
         #endregion
 
         #region Обработчики кнопок меню
