@@ -254,7 +254,7 @@ namespace QTS.WinForms
         }
         #endregion
 
-        #region Обработчик нажатия клавиш стрелок
+        #region Обработчик нажатия клавиш
         private void plot1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             if (e.Control)
@@ -273,6 +273,12 @@ namespace QTS.WinForms
                     break;
                 case Keys.Right:
                     stepForward_Button.PerformClick();
+                    break;
+                case Keys.Q:
+                    ShowPreviousLines_ComboBox.SelectedIndex = -ShowPreviousLines_ComboBox.SelectedIndex + 1;
+                    break;
+                case Keys.W:
+                    ShowGraphs_ComboBox.SelectedIndex = -ShowGraphs_ComboBox.SelectedIndex + 1;
                     break;
             }
         }
