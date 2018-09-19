@@ -396,9 +396,8 @@ namespace QTS.Core
             intDiag.AddLineMetadata($"Сумма { improvementData.ExperimentCount } графиков");
             intDiag.CompleteLine();
 
-
-            CallbackUi.InteractiveDiagram = intDiag;
             intDiag.SetLayer(0);
+            CallbackUi.InteractiveDiagram = intDiag;
             intDiag.ViewUpdated += CallbackUi.InvalidateDiagramView;
             intDiag.GoToEnd();
         }

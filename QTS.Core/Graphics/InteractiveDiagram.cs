@@ -15,7 +15,7 @@ namespace QTS.Core.Graphics
         /// <summary>
         /// Количество линий на диаграмме.
         /// </summary>
-        public int LinesCount { get; private set; }
+        int[] LinesCount { get; }
 
         int CurrentLayer { get; set; }
         int layersCount;
@@ -25,6 +25,7 @@ namespace QTS.Core.Graphics
             showPreviousLines = true;
             layersCount = layerCount;
             CurrentLayer = -1;
+            LinesCount = new int[layerCount];
         }
 
         //                      ,o.----.-----.oo.
@@ -126,13 +127,13 @@ namespace QTS.Core.Graphics
 
         public void BeginLine()
         {
-            LinesCount++;
+            LinesCount[0]++;
             CreateLine(0);
         }
 
         public void BeginLine(int layer)
         {
-            LinesCount++;
+            LinesCount[layer]++;
             CreateLine(layer);
         }
 
@@ -204,12 +205,12 @@ namespace QTS.Core.Graphics
 
         public void GoToEnd()
         {
-            SetVisibleLinesCount(LinesCount - 1);
+            SetVisibleLinesCount(LinesCount[CurrentLayer] - 1);
         }
 
         public void StepForward()
         {
-            if (currentVisibleIndex == LinesCount - 1)
+            if (currentVisibleIndex == LinesCount[CurrentLayer] - 1)
                 return;
 
             SetVisibleLinesCount(currentVisibleIndex + 1);
