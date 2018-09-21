@@ -4,6 +4,7 @@ using QTS.Core.Diagram;
 
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace QTS.Core
 {
@@ -163,10 +164,23 @@ namespace QTS.Core
 
             bool useGraphics = true;
 
-            if (parameters.HasClientLimit && parameters.ClientLimit > 200 || parameters.HasTimeLimit && parameters.TimeLimit * parameters.ThreadIntencity > 200)
+            var timeToCl = (int)parameters.TimeLimit * parameters.ThreadIntencity;
+
+            int min;
+
+            if (!parameters.HasTimeLimit)
+                min = parameters.ClientLimit;
+            else if (!parameters.HasClientLimit)
+                min = timeToCl;
+            else
+                min = Math.Min(timeToCl, parameters.ClientLimit);
+
+            if (min > 200)
             {
-                string text = parameters.HasClientLimit ? string.Format("содержит {0}", parameters.ClientLimit) : string.Format("будет содержать около {0}", parameters.ThreadIntencity * parameters.TimeLimit);
-                useGraphics = CallbackUi.YesNoDialog("Предупреждение", "Временная диаграмма " + text + " линий.\nЕе отрисовка может вызвать замедление работы компьютера.\n Отрисовать диаграмму ?\n(анализ диаграммы возможен при любом выборе)");
+                useGraphics = CallbackUi.YesNoDialog("Предупреждение", string.Format(@"Временная диаграмма будет содержать около {0} линий.
+Ее отрисовка может вызвать замедление работы компьютера.
+Отрисовать диаграмму?
+(анализ диаграммы возможен при любом выборе)", min));
             }
 
             ProcessModeller modeller = new ProcessModeller(parameters);
