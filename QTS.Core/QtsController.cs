@@ -4,7 +4,6 @@ using QTS.Core.Diagram;
 
 using System.Collections.Generic;
 using System.Linq;
-using System;
 
 namespace QTS.Core
 {
@@ -17,7 +16,7 @@ namespace QTS.Core
     {
         string analyzeText = "";
 
-        ICallbackUi CallbackUi { get; }
+        IUserInterface CallbackUi { get; }
         IGraphicsFactory<InteractiveDiagram, IGraph> GraphicsFactory { get; }
 
         static IEnumerable<Metric> clientMetrics = new[]
@@ -70,7 +69,7 @@ namespace QTS.Core
         /// </summary>
         /// <param name="callbackUi">Используемый для обратной связи пользовательский интерфейс</param>
         /// <param name="graphicsFactory">Фабрика для создания графических элементов.</param>
-        public QtsController(ICallbackUi callbackUi, IGraphicsFactory<InteractiveDiagram, IGraph> graphicsFactory)
+        public QtsController(IUserInterface callbackUi, IGraphicsFactory<InteractiveDiagram, IGraph> graphicsFactory)
         {
             CallbackUi = callbackUi;
             GraphicsFactory = graphicsFactory;
@@ -156,28 +155,6 @@ namespace QTS.Core
         public void MakeDiagram()
         {
             ParametersContainer parameters = CallbackUi.GetDiagramParameters();
-
-
-            //QueuePlaceGradientData gradient = new QueuePlaceGradientData(2, 30);
-
-            //List<DiagramData> diagrams = new List<DiagramData>(gradient.MaxQueueCapacity - gradient.MinQueueCapacity + 1);
-
-            //for (parameters.QueueCapacity = gradient.MinQueueCapacity; parameters.QueueCapacity <= gradient.MaxQueueCapacity; parameters.QueueCapacity++)
-            //{
-            //    ProcessModeller mdl = new ProcessModeller(parameters);
-            //    diagrams.Add(mdl.CreateDiagram(GraphicsFactory));
-            //}
-
-            //var metrics = new Metric[]
-            //{
-            //    new Metric(Formulas.AverageBusyChannelCount, "Среднее колво занятых каналов", "", MetricType.Float)
-            //};
-
-            //var graphs = ReportTool.CreateGraphs(diagrams.ToArray(), metrics, gradient, GraphicsFactory);
-
-            //foreach (var graph in graphs)
-            //    graph.ExportToBitmap(true).Save(graph.Title + ".png");
-
 
             if (!CheckParametersValid(parameters))
                 return;
@@ -383,7 +360,7 @@ namespace QTS.Core
                     heightsSum = heightsSum.Zip(heights, (a, b) => a + b).ToArray();
 
                 intDiag.BeginInteractiveLine(i);
-                intDiag.CreateLineByPoints(heights, gradient.MinQueueCapacity);
+                intDiag.AddPoints(heights, gradient.MinQueueCapacity);
                 intDiag.AddLineMetadata($"Эксперимент { i + 1 }");
                 intDiag.CompleteLine();
             }
@@ -392,7 +369,7 @@ namespace QTS.Core
             CallbackUi.UnlockInterface();
 
             intDiag.BeginLine(1);
-            intDiag.CreateLineByPoints(heightsSum.Select(height => height / improvementData.ExperimentCount), gradient.MinQueueCapacity);
+            intDiag.AddPoints(heightsSum.Select(height => height / improvementData.ExperimentCount), gradient.MinQueueCapacity);
             intDiag.AddLineMetadata($"Сумма { improvementData.ExperimentCount } графиков");
             intDiag.CompleteLine();
 

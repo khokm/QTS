@@ -1,14 +1,12 @@
 ﻿using QTS.Core.Graphics;
 using QTS.Core.Diagram;
-using System.Collections.Generic;
 
 namespace QTS.Core
 {
     /// <summary>
     /// Пользовательский интерфейс (например, CLI или GUI) для обратной связи.
     /// </summary>
-    /// <typeparam name="T">Используемая реализация временной диаграммы.</typeparam>
-    public interface ICallbackUi
+    public interface IUserInterface
     {
         /// <summary>
         /// Перерисовывает диаграмму, отбражаемую в главном окне.

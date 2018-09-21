@@ -15,7 +15,7 @@ namespace QTS.WinForms
      * Реализация главной формы как пользовательского интерфейса для обратной связи
      */
 
-    partial class MainForm : ICallbackUi
+    partial class MainForm : IUserInterface
     {
         InteractiveDiagram diagram;
 

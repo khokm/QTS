@@ -115,7 +115,7 @@ namespace QTS.OxyPlotGraphics
             series = new List<Series>[layersCount].Select(list => new List<Series>()).ToArray();
         }
 
-        public override void CreateLineByPoints(IEnumerable<double> yValues, double startX) => 
+        public override void AddPoints(IEnumerable<double> yValues, double startX) => 
             currentLine.Points.AddRange(yValues.Select(value => new DataPoint(startX++, value)));
 
         public override void AddPoint(double y, double x)

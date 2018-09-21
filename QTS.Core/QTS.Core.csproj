@@ -39,7 +39,7 @@
     <Compile Include="Graphics\InteractiveDiagram.cs" />
     <Compile Include="Diagram\QueuePlaceGradientData.cs" />
     <Compile Include="Tools\RandomGenerator.cs" />
-    <Compile Include="ICallbackUi.cs" />
+    <Compile Include="IUserInterface.cs" />
     <Compile Include="Graphics\IGraph.cs" />
     <Compile Include="Graphics\IGraphicsFactory.cs" />
     <Compile Include="Diagram\ParametersContainer.cs" />

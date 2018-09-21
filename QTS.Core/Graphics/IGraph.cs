@@ -50,7 +50,7 @@ namespace QTS.Core.Graphics
         /// </summary>
         /// <param name="yValues">Набор значений по оси Y.</param>
         /// <param name="startX">Позиция по оси X, с которой начинается линия.</param>
-        void CreateLineByPoints(IEnumerable<double> yValues, double startX);
+        void AddPoints(IEnumerable<double> yValues, double startX);
 
         /// <summary>
         /// Сохраняет график в файл как png изображение.

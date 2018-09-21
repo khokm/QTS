@@ -12,7 +12,7 @@ namespace QTS.OxyPlotGraphics
         {
             var graph = new OxyPlotGraph(XAxis, YAxis, 0, 0, 1, 1, 1, null, 1);
             graph.BeginLine();
-            graph.CreateLineByPoints(yValues, startX);
+            graph.AddPoints(yValues, startX);
             graph.CompleteLine();
             return graph;
         }
