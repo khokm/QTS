@@ -130,28 +130,28 @@
             // построитьГрафикToolStripMenuItem
             // 
             this.построитьГрафикToolStripMenuItem.Name = "построитьГрафикToolStripMenuItem";
-            this.построитьГрафикToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
-            this.построитьГрафикToolStripMenuItem.Text = "Построить временную диаграмму";
+            this.построитьГрафикToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.построитьГрафикToolStripMenuItem.Text = "Создать интерактивную диаграмму";
             this.построитьГрафикToolStripMenuItem.Click += new System.EventHandler(this.построитьГрафикToolStripMenuItem_Click);
             // 
             // анализДиаграммыToolStripMenuItem
             // 
             this.анализДиаграммыToolStripMenuItem.Name = "анализДиаграммыToolStripMenuItem";
-            this.анализДиаграммыToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
+            this.анализДиаграммыToolStripMenuItem.Size = new System.Drawing.Size(269, 22);
             this.анализДиаграммыToolStripMenuItem.Text = "Анализ диаграммы...";
             this.анализДиаграммыToolStripMenuItem.Click += new System.EventHandler(this.анализДиаграммыToolStripMenuItem_Click);
             // 
             // синтезСМОToolStripMenuItem
             // 
             this.синтезСМОToolStripMenuItem.Name = "синтезСМОToolStripMenuItem";
-            this.синтезСМОToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
+            this.синтезСМОToolStripMenuItem.Size = new System.Drawing.Size(269, 22);
             this.синтезСМОToolStripMenuItem.Text = "Синтез СМО...";
             this.синтезСМОToolStripMenuItem.Click += new System.EventHandler(this.синтезСМОToolStripMenuItem_Click);
             // 
             // улучшениеГрафикаToolStripMenuItem
             // 
             this.улучшениеГрафикаToolStripMenuItem.Name = "улучшениеГрафикаToolStripMenuItem";
-            this.улучшениеГрафикаToolStripMenuItem.Size = new System.Drawing.Size(245, 22);
+            this.улучшениеГрафикаToolStripMenuItem.Size = new System.Drawing.Size(269, 22);
             this.улучшениеГрафикаToolStripMenuItem.Text = "Улучшение графика...";
             this.улучшениеГрафикаToolStripMenuItem.Click += new System.EventHandler(this.улучшениеГрафикаToolStripMenuItem_Click);
             // 
@@ -502,18 +502,18 @@
             // toolStripLabel2
             // 
             this.toolStripLabel2.Name = "toolStripLabel2";
-            this.toolStripLabel2.Size = new System.Drawing.Size(94, 22);
-            this.toolStripLabel2.Text = "Показывать (W):";
+            this.toolStripLabel2.Size = new System.Drawing.Size(140, 22);
+            this.toolStripLabel2.Text = "Показывать графики (W):";
             // 
             // ShowGraphs_ComboBox
             // 
             this.ShowGraphs_ComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.ShowGraphs_ComboBox.Items.AddRange(new object[] {
-            "Семейство графиков",
-            "Сумму графиков"});
+            "Семейство",
+            "Сумму"});
             this.ShowGraphs_ComboBox.MergeIndex = 0;
             this.ShowGraphs_ComboBox.Name = "ShowGraphs_ComboBox";
-            this.ShowGraphs_ComboBox.Size = new System.Drawing.Size(130, 25);
+            this.ShowGraphs_ComboBox.Size = new System.Drawing.Size(80, 25);
             this.ShowGraphs_ComboBox.SelectedIndexChanged += new System.EventHandler(this.ShowGraphs_ComboBox_SelectedIndexChanged);
             // 
             // MainForm

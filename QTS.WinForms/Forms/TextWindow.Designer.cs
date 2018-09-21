@@ -73,7 +73,7 @@
             this.ClientSize = new System.Drawing.Size(469, 514);
             this.Controls.Add(this.panel1);
             this.Name = "TextWindow";
-            this.Text = "Анализ временной диаграммы";
+            this.Text = "Анализ диаграммы";
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.ResumeLayout(false);

@@ -88,12 +88,12 @@ namespace QTS.Core
 
             if (!parameters.HasTimeLimit && !parameters.HasClientLimit)
             {
-                CallbackUi.ShowError("Построить временную диаграмму", "Система не имеет ограничений ни по времени, ни по заявкам.");
+                CallbackUi.ShowError("Моделирование процесса СМО", "Система не имеет ограничений ни по времени, ни по заявкам.");
                 return false;
             }
 
             if (parameters.ChannelCount == 0)
-                CallbackUi.ShowWarning("Построить временную диаграмму", "Система не имеет мест обслуживания.\nСледовательно, все заявки будут отклонены.");
+                CallbackUi.ShowWarning("Моделирование процесса СМО", "Система не имеет мест обслуживания.\nСледовательно, все заявки будут отклонены.");
 
             if (parameters.ChannelCount < 0 || parameters.QueueCapacity < 0)
             {
