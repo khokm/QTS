@@ -181,6 +181,7 @@ namespace QTS.OxyPlotGraphics
 
         public override void ExportToBitmap(bool betterHeights, string path)
         {
+            SetViewLayer(0);
             if(betterHeights)
             {
                 int max = 1;
